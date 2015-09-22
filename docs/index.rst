@@ -18,6 +18,10 @@ To install:
 
 For details on development or supported platforms see the `agate documentation <http://agate.readthedocs.org>`_.
 
+.. warning::
+
+    You'll need to have the correct sqlalchemy drivers installed for whatever database you plan to access. For instance, in order to read tables from Postgres, you'll also need to ``pip install psycopg2``.
+
 Usage
 =====
 
