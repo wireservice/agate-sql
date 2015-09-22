@@ -107,6 +107,3 @@ class TableSQL(object):
 
         insert = sql_table.insert()
         connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
-
-# Monkeypatch!
-agate.Table.monkeypatch(TableSQL)

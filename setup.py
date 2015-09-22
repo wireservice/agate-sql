@@ -4,7 +4,6 @@ from setuptools import setup
 import sys
 
 install_requires = [
-    'six==1.6.1',
     'agate>=0.10.0',
     'sqlalchemy>=1.0.8'
 ]
@@ -37,8 +36,8 @@ setup(
         'Topic :: Scientific/Engineering :: Visualization',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    py_modules=[
-        'agate-sql'
+    packages=[
+        'agatesql'
     ],
     install_requires=install_requires
 )
