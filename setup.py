@@ -10,7 +10,7 @@ install_requires = [
 
 setup(
     name='agate-sql',
-    version='0.1.0',
+    version='0.2.0',
     description='agate-sql adds SQL read/write support to agate.',
     long_description=open('README').read(),
     author='Christopher Groskopf',
