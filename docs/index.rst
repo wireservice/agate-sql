@@ -25,16 +25,16 @@ For details on development or supported platforms see the `agate documentation <
 Usage
 =====
 
-agate-sql uses agate's monkeypatching pattern to automatically add SQL support to all :class:`agate.Table <agate.table.Table>` instances.
+agate-sql uses a monkey patching pattern to add SQL support to all :class:`agate.Table <agate.table.Table>` instances.
 
 .. code-block:: python
 
     import agate
     import agatesql
 
-Once imported, you'll be able to use :meth:`.TableSQL.from_sql` and :meth:`.TableSQL.to_sql` as though they are members of :class:`agate.Table <agate.table.Table>`.
+    agatesql.patch()
 
-To import a table named :code:`doctors` from a local postgresql database named :code:`hospitals` you would run:
+Calling :meth:`patch` attaches all the methods of :meth:`TableSQL` to :class:`agate.Table <agate.table.Table>`. For example, to import a table named :code:`doctors` from a local postgresql database named :code:`hospitals` you will use :meth:`TableSQL.from_sql`:
 
 .. code-block:: python
 
@@ -53,6 +53,8 @@ That's all there is to it.
 ===
 API
 ===
+
+.. autofunction:: agatesql.patch
 
 .. autoclass:: agatesql.table.TableSQL
     :members:
