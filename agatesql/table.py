@@ -11,6 +11,7 @@ SQL_TYPE_MAP = {
     agate.Number: DECIMAL,
     agate.Date: DATE,
     agate.DateTime: DATETIME,
+    # agate.TimeDelta
     agate.Text: VARCHAR
 }
 
