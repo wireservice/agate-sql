@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import decimal
+import datetime
 import agate
 from sqlalchemy import Column, MetaData, Table, create_engine
 from sqlalchemy.engine import Connection
@@ -42,17 +44,17 @@ class TableSQL(object):
 
         for sql_column in sql_table.columns:
             column_names.append(sql_column.name)
-            sql_type = type(sql_column.type)
+            py_type = sql_column.type.python_type
 
-            if sql_type in [BIGINT, DECIMAL, FLOAT, INTEGER, NUMERIC, REAL, SMALLINT]:
+            if py_type in [int, float, decimal.Decimal]:
                 column_types.append(agate.Number())
-            elif sql_type is BOOLEAN:
+            elif py_type is bool:
                 column_types.append(agate.Boolean())
-            elif sql_type in [CHAR, NCHAR, VARCHAR, NVARCHAR]:
+            elif py_type in [str, unicode]:
                 column_types.append(agate.Text())
-            elif sql_type is DATE:
+            elif py_type is datetime.date:
                 column_types.append(agate.Date())
-            elif sql_type is DATETIME:
+            elif py_type is datetime.datetime:
                 column_types.append(agate.DateTime())
             else:
                 raise ValueError('Unsupported sqlalchemy column type: %s' % sql_type)
