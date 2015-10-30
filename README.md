@@ -1,6 +1,6 @@
 # agate-sql
 
-[![Build Status](https://travis-ci.org/onyxfish/agate-svg.svg)](https://travis-ci.org/onyxfish/agate-sql) [![PyPI Downloads](https://img.shields.io/pypi/dw/agate-sql.svg)](https://pypi.python.org/pypi/agate-sql)
+[![Build Status](https://travis-ci.org/onyxfish/agate-sql.svg)](https://travis-ci.org/onyxfish/agate-sql) [![PyPI Downloads](https://img.shields.io/pypi/dw/agate-sql.svg)](https://pypi.python.org/pypi/agate-sql)
 
 [![Version](https://img.shields.io/pypi/v/agate-sql.svg)](https://pypi.python.org/pypi/agate-sql) [![License](https://img.shields.io/pypi/l/agate-sql.svg)](https://pypi.python.org/pypi/agate-sql) [![Python Versions](https://img.shields.io/pypi/pyversions/agate-sql.svg)](https://pypi.python.org/pypi/agate-sql)
 
