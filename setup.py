@@ -12,7 +12,7 @@ setup(
     name='agate-sql',
     version='0.3.0',
     description='agate-sql adds SQL read/write support to agate.',
-    long_description=open('README').read(),
+    long_description=open('README.txt').read(),
     author='Christopher Groskopf',
     author_email='chrisgroskopf@gmail.com',
     url='http://agate-sql.readthedocs.org/',

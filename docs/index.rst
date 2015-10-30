@@ -2,10 +2,17 @@
 agate-sql |release|
 ===================
 
+.. image:: https://travis-ci.org/onyxfish/agate.png
+    :target: https://travis-ci.org/onyxfish/agate
+    :alt: Build status
+.. image:: https://img.shields.io/pypi/dw/agate.svg
+    :target: https://pypi.python.org/pypi/agate
+    :alt: PyPI downloads
+    
 About
 =====
 
-.. include:: ../README
+.. include:: ../README.txt
 
 Install
 =======
