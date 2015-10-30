@@ -47,6 +47,8 @@ class TableSQL(object):
             py_type = sql_column.type.python_type
 
             if py_type in [int, float, decimal.Decimal]:
+                if py_type is float:
+                    sql_column.type.asdecimal = True
                 column_types.append(agate.Number())
             elif py_type is bool:
                 column_types.append(agate.Boolean())
