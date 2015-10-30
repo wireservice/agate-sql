@@ -2,6 +2,7 @@
 
 import decimal
 import datetime
+import six
 import agate
 from sqlalchemy import Column, MetaData, Table, create_engine
 from sqlalchemy.engine import Connection
@@ -45,14 +46,16 @@ class TableSQL(object):
         for sql_column in sql_table.columns:
             column_names.append(sql_column.name)
             py_type = sql_column.type.python_type
+            if six.PY2:
+                if py_type in (str, unicode):
+                    py_type = basestring
+            sql_type = type(sql_column.type)
 
             if py_type in [int, float, decimal.Decimal]:
-                if py_type is float:
-                    sql_column.type.asdecimal = True
                 column_types.append(agate.Number())
             elif py_type is bool:
                 column_types.append(agate.Boolean())
-            elif py_type in [str, unicode]:
+            elif py_type in six.string_types:
                 column_types.append(agate.Text())
             elif py_type is datetime.date:
                 column_types.append(agate.Date())
