@@ -46,10 +46,6 @@ class TableSQL(object):
         for sql_column in sql_table.columns:
             column_names.append(sql_column.name)
             py_type = sql_column.type.python_type
-            if six.PY2:
-                if py_type in (str, unicode):
-                    py_type = basestring
-            sql_type = type(sql_column.type)
 
             if py_type in [int, float, decimal.Decimal]:
                 column_types.append(agate.Number())
