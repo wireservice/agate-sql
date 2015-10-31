@@ -51,14 +51,14 @@ class TableSQL(object):
                 column_types.append(agate.Number())
             elif py_type is bool:
                 column_types.append(agate.Boolean())
-            elif py_type in six.string_types:
+            elif issubclass(py_type, six.string_types):
                 column_types.append(agate.Text())
             elif py_type is datetime.date:
                 column_types.append(agate.Date())
             elif py_type is datetime.datetime:
                 column_types.append(agate.DateTime())
             else:
-                raise ValueError('Unsupported sqlalchemy column type: %s' % sql_type)
+                raise ValueError('Unsupported sqlalchemy column type: %s' % type(sql_column.type))
 
         s = select([sql_table])
 
