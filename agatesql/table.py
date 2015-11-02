@@ -2,10 +2,13 @@
 
 import decimal
 import datetime
+import six
 import agate
 from sqlalchemy import Column, MetaData, Table, create_engine
 from sqlalchemy.engine import Connection
 from sqlalchemy.types import *
+from sqlalchemy.dialects.oracle import INTERVAL as ora_interval
+from sqlalchemy.dialects.postgresql import INTERVAL as pg_interval
 from sqlalchemy.sql import select
 
 SQL_TYPE_MAP = {
@@ -13,9 +16,16 @@ SQL_TYPE_MAP = {
     agate.Number: DECIMAL,
     agate.Date: DATE,
     agate.DateTime: DATETIME,
-    agate.TimeDelta: Interval,
+    agate.TimeDelta: None,
     agate.Text: VARCHAR
 }
+
+
+INTERVAL_MAP = {
+    "postgresql": pg_interval,
+    "oracle": ora_interval
+}
+
 
 class TableSQL(object):
     @classmethod
@@ -35,7 +45,6 @@ class TableSQL(object):
         else:
             engine = create_engine(connection_or_string)
             connection = engine.connect()
-
         metadata = MetaData(connection)
         sql_table = Table(table_name, metadata, autoload=True, autoload_with=connection)
 
@@ -44,7 +53,10 @@ class TableSQL(object):
 
         for sql_column in sql_table.columns:
             column_names.append(sql_column.name)
-            py_type = sql_column.type.python_type
+            if type(sql_column.type) in INTERVAL_MAP.values():
+                py_type = datetime.timedelta
+            else:
+                py_type = sql_column.type.python_type
 
             if py_type in [int, float, decimal.Decimal]:
                 if py_type is float:
@@ -77,7 +89,6 @@ class TableSQL(object):
         :param column_type: The agate type of the column.
         """
         sql_column_type = None
-
         for agate_type, sql_type in SQL_TYPE_MAP.items():
             if isinstance(column_type, agate_type):
                 sql_column_type = sql_type
@@ -104,8 +115,14 @@ class TableSQL(object):
             engine = create_engine(connection_or_string)
             connection = engine.connect()
 
+        dialect = connection.engine.dialect.name
         metadata = MetaData(connection)
         sql_table = Table(table_name, metadata)
+
+        if dialect in INTERVAL_MAP.keys():
+            SQL_TYPE_MAP[agate.TimeDelta] = INTERVAL_MAP[dialect]
+        else:
+            SQL_TYPE_MAP[agate.TimeDelta] = Interval
 
         for column_name, column_type in zip(self.column_names, self.column_types):
             sql_table.append_column(self._make_sql_column(column_name, column_type))
