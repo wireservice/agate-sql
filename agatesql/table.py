@@ -52,11 +52,7 @@ class TableSQL(object):
                 column_types.append(agate.Number())
             elif py_type is bool:
                 column_types.append(agate.Boolean())
-<<<<<<< Updated upstream
             elif issubclass(py_type, six.string_types):
-=======
-            elif py_type in [str, unicode]:
->>>>>>> Stashed changes
                 column_types.append(agate.Text())
             elif py_type is datetime.date:
                 column_types.append(agate.Date())
