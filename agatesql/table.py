@@ -2,7 +2,6 @@
 
 import decimal
 import datetime
-import six
 import agate
 from sqlalchemy import Column, MetaData, Table, create_engine
 from sqlalchemy.engine import Connection
@@ -14,7 +13,7 @@ SQL_TYPE_MAP = {
     agate.Number: DECIMAL,
     agate.Date: DATE,
     agate.DateTime: DATETIME,
-    # agate.TimeDelta
+    agate.TimeDelta: Interval,
     agate.Text: VARCHAR
 }
 
@@ -48,15 +47,23 @@ class TableSQL(object):
             py_type = sql_column.type.python_type
 
             if py_type in [int, float, decimal.Decimal]:
+                if py_type is float:
+                    sql_column.type.asdecimal = True
                 column_types.append(agate.Number())
             elif py_type is bool:
                 column_types.append(agate.Boolean())
+<<<<<<< Updated upstream
             elif issubclass(py_type, six.string_types):
+=======
+            elif py_type in [str, unicode]:
+>>>>>>> Stashed changes
                 column_types.append(agate.Text())
             elif py_type is datetime.date:
                 column_types.append(agate.Date())
             elif py_type is datetime.datetime:
                 column_types.append(agate.DateTime())
+            elif py_type is datetime.timedelta:
+                column_types.append(agate.TimeDelta())
             else:
                 raise ValueError('Unsupported sqlalchemy column type: %s' % type(sql_column.type))
 
