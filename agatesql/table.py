@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 """
-agate-sql adds SQL read/write support to `agate <https://github.com/onyxfish/agate>`_.
+This module contains the agatesql extensions to
+:class:`Table <agate.table.Table>`.
 """
 
 import decimal

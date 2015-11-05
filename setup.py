@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from setuptools import setup
-import sys
 
 install_requires = [
     'agate>=1.1.0',
@@ -12,7 +11,7 @@ setup(
     name='agate-sql',
     version='0.3.0',
     description='agate-sql adds SQL read/write support to agate.',
-    long_description=open('README.txt').read(),
+    long_description=open('README.rst').read(),
     author='Christopher Groskopf',
     author_email='chrisgroskopf@gmail.com',
     url='http://agate-sql.readthedocs.org/',

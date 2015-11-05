@@ -2,17 +2,7 @@
 agate-sql |release|
 ===================
 
-.. image:: https://travis-ci.org/onyxfish/agate.png
-    :target: https://travis-ci.org/onyxfish/agate
-    :alt: Build status
-.. image:: https://img.shields.io/pypi/dw/agate.svg
-    :target: https://pypi.python.org/pypi/agate
-    :alt: PyPI downloads
-    
-About
-=====
-
-.. include:: ../README.txt
+.. include:: ../README.rst
 
 Install
 =======
@@ -41,7 +31,7 @@ agate-sql uses a monkey patching pattern to add SQL support to all :class:`agate
 
     agatesql.patch()
 
-Calling :meth:`patch` attaches all the methods of :meth:`TableSQL` to :class:`agate.Table <agate.table.Table>`. For example, to import a table named :code:`doctors` from a local postgresql database named :code:`hospitals` you will use :meth:`TableSQL.from_sql`:
+Calling :func:`.patch` attaches all the methods of :class:`.TableSQL` to :class:`agate.Table <agate.table.Table>`. For example, to import a table named :code:`doctors` from a local postgresql database named :code:`hospitals` you will use :meth:`.TableSQL.from_sql`:
 
 .. code-block:: python
 
@@ -69,17 +59,17 @@ API
 Authors
 =======
 
-.. include:: ../AUTHORS
+.. include:: ../AUTHORS.rst
+
+Changelog
+=========
+
+.. include:: ../CHANGELOG.rst
 
 License
 =======
 
 .. include:: ../COPYING
-
-Changelog
-=========
-
-.. include:: ../CHANGELOG
 
 Indices and tables
 ==================
