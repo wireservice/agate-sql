@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 
+"""
+agate-sql adds SQL read/write support to `agate <https://github.com/onyxfish/agate>`_.
+"""
+
 import decimal
 import datetime
 import six
 import agate
 from sqlalchemy import Column, MetaData, Table, create_engine
 from sqlalchemy.engine import Connection
-from sqlalchemy.types import *
-from sqlalchemy.dialects.oracle import INTERVAL as ora_interval
-from sqlalchemy.dialects.postgresql import INTERVAL as pg_interval
+from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, DATETIME, VARCHAR, Interval
+from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
+from sqlalchemy.dialects.postgresql import INTERVAL as POSTGRES_INTERVAL
 from sqlalchemy.sql import select
 
 SQL_TYPE_MAP = {
@@ -16,16 +20,14 @@ SQL_TYPE_MAP = {
     agate.Number: DECIMAL,
     agate.Date: DATE,
     agate.DateTime: DATETIME,
-    agate.TimeDelta: None,
+    agate.TimeDelta: None,  # See below
     agate.Text: VARCHAR
 }
 
-
 INTERVAL_MAP = {
-    "postgresql": pg_interval,
-    "oracle": ora_interval
+    'postgresql': POSTGRES_INTERVAL,
+    'oracle': ORACLE_INTERVAL
 }
-
 
 class TableSQL(object):
     @classmethod
@@ -45,6 +47,7 @@ class TableSQL(object):
         else:
             engine = create_engine(connection_or_string)
             connection = engine.connect()
+
         metadata = MetaData(connection)
         sql_table = Table(table_name, metadata, autoload=True, autoload_with=connection)
 
@@ -53,6 +56,7 @@ class TableSQL(object):
 
         for sql_column in sql_table.columns:
             column_names.append(sql_column.name)
+
             if type(sql_column.type) in INTERVAL_MAP.values():
                 py_type = datetime.timedelta
             else:
@@ -79,7 +83,7 @@ class TableSQL(object):
 
         rows = connection.execute(s)
 
-        return agate.Table(rows, zip(column_names, column_types))
+        return agate.Table(rows, column_names, column_types)
 
     def _make_sql_column(self, column_name, column_type):
         """
@@ -89,6 +93,7 @@ class TableSQL(object):
         :param column_type: The agate type of the column.
         """
         sql_column_type = None
+
         for agate_type, sql_type in SQL_TYPE_MAP.items():
             if isinstance(column_type, agate_type):
                 sql_column_type = sql_type

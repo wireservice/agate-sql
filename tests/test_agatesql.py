@@ -26,7 +26,7 @@ class TestSQL(unittest.TestCase):
         self.column_names = ('one', 'two')
         self.column_types = (self.number_type, self.text_type)
 
-        self.table = agate.Table(self.rows, zip(self.column_names, self.column_types))
+        self.table = agate.Table(self.rows, self.column_names, self.column_types)
         self.connection_string = 'sqlite:///:memory:'
 
     def test_sql(self):

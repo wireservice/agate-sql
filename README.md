@@ -4,7 +4,7 @@
 
 [![Version](https://img.shields.io/pypi/v/agate-sql.svg)](https://pypi.python.org/pypi/agate-sql) [![License](https://img.shields.io/pypi/l/agate-sql.svg)](https://pypi.python.org/pypi/agate-sql) [![Python Versions](https://img.shields.io/pypi/pyversions/agate-sql.svg)](https://pypi.python.org/pypi/agate-sql)
 
-agate-sql adds SQL read/write support to [agate](https://github.com/onyxfish/agate-sql).
+agate-sql adds SQL read/write support to [agate](https://github.com/onyxfish/agate).
 
 Important links:
 
