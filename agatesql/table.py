@@ -105,15 +105,19 @@ class TableSQL(object):
 
         return Column(column_name, sql_column_type())
 
-    def to_sql(self, connection_or_string, table_name):
+    def to_sql(self, connection_or_string, table_name, overwrite=False):
         """
         Write this table to the given SQL database.
 
         Monkey patched as instance method :meth:`Table.to_sql`.
 
-        :param connection_or_string: An existing sqlalchemy connection or a
-            connection string.
-        :param table_name: The name of the SQL table to create.
+        :param connection_or_string:
+            An existing sqlalchemy connection or a connection string.
+        :param table_name:
+            The name of the SQL table to create.
+        :param overwrite:
+            If ``True``, any existing table with the same name will be dropped
+            and recreated.
         """
         if isinstance(connection_or_string, Connection):
             connection = connection_or_string
@@ -133,6 +137,9 @@ class TableSQL(object):
         for column_name, column_type in zip(self.column_names, self.column_types):
             sql_table.append_column(self._make_sql_column(column_name, column_type))
 
+        if overwrite:
+            sql_table.drop(checkfirst=True)
+            
         sql_table.create()
 
         insert = sql_table.insert()

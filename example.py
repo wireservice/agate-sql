@@ -12,4 +12,4 @@ print(table.column_types)
 print(len(table.columns))
 print(len(table.rows))
 
-table.to_sql('postgresql:///pa-sentencing', 'foo')
+table.to_sql('postgresql:///pa-sentencing', 'foo', overwrite=True)
