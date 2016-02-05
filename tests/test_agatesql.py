@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 
 agatesql.patch()
 
-class TestSQL(unittest.TestCase):
+class TestSQL(agate.AgateTestCase):
     def setUp(self):
         self.rows = (
             (1, 'a', True, '11/4/2015', '11/4/2015 12:22 PM'),
