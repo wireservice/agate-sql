@@ -1,7 +1,7 @@
 0.4.0
 -----
 
-
+* It is no longer necessary to run :code:`agatesql.patch()` after importing agatesql.
 
 0.3.0 - November 5, 2015
 ------------------------

@@ -10,8 +10,6 @@ import agate
 import agatesql
 from sqlalchemy import create_engine
 
-agatesql.patch()
-
 class TestSQL(agate.AgateTestCase):
     def setUp(self):
         self.rows = (

@@ -3,8 +3,6 @@
 import agate
 import agatesql
 
-agatesql.patch()
-
 table = agate.Table.from_sql('postgresql:///pa-sentencing', 'subset')
 
 print(table.column_names)
