@@ -1,7 +1,9 @@
 0.4.0
 -----
 
+* Modified ``example.py`` so it no longer depends on Postgres.
 * It is no longer necessary to run :code:`agatesql.patch()` after importing agatesql.
+* Upgrade required agate to ``1.5.0``.
 
 0.3.0 - November 5, 2015
 ------------------------

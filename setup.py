@@ -3,7 +3,7 @@
 from setuptools import setup
 
 install_requires = [
-    'agate>=1.3.1',
+    'agate>=1.5.0',
     'sqlalchemy>=1.0.8'
 ]
 

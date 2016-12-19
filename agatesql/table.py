@@ -30,7 +30,6 @@ INTERVAL_MAP = {
     'oracle': ORACLE_INTERVAL
 }
 
-# @classmethod
 def from_sql(cls, connection_or_string, table_name):
     """
     Create a new :class:`agate.Table` from a given SQL table. Types will be
