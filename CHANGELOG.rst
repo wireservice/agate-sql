@@ -1,5 +1,9 @@
-0.4.0
+0.4.1
 -----
+
+
+0.4.0 - December 19, 2016
+-------------------------
 
 * Modified ``example.py`` so it no longer depends on Postgres.
 * It is no longer necessary to run :code:`agatesql.patch()` after importing agatesql.
