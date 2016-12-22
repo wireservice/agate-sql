@@ -14,6 +14,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, DATETIME, VARCHAR, Interval
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
 from sqlalchemy.dialects.postgresql import INTERVAL as POSTGRES_INTERVAL
+from sqlalchemy.schema import CreateTable
 from sqlalchemy.sql import select
 
 SQL_TYPE_MAP = {
@@ -30,6 +31,23 @@ INTERVAL_MAP = {
     'oracle': ORACLE_INTERVAL
 }
 
+def get_connection(connection_or_string=None):
+    """
+    Gets a connection to a specific SQL alchemy backend. If an existing
+    connection is provided, it will be passed through. If no connection
+    string is provided, then in in-memory SQLite database will be created.
+    """
+    if connection_or_string is None:
+        engine = create_engine('sqlite:///:memory:')
+        connection = engine.connect()
+    elif isinstance(connection_or_string, Connection):
+        connection = connection_or_string
+    else:
+        engine = create_engine(connection_or_string)
+        connection = engine.connect()
+
+    return connection
+
 def from_sql(cls, connection_or_string, table_name):
     """
     Create a new :class:`agate.Table` from a given SQL table. Types will be
@@ -37,15 +55,12 @@ def from_sql(cls, connection_or_string, table_name):
 
     Monkey patched as class method :meth:`Table.from_sql`.
 
-    :param connection_or_string: An existing sqlalchemy connection or a
-        connection string.
-    :param table_name: The name of a table in the referenced database.
+    :param connection_or_string:
+        An existing sqlalchemy connection or connection string.
+    :param table_name:
+        The name of a table in the referenced database.
     """
-    if isinstance(connection_or_string, Connection):
-        connection = connection_or_string
-    else:
-        engine = create_engine(connection_or_string)
-        connection = engine.connect()
+    connection = get_connection(connection_or_string)
 
     metadata = MetaData(connection)
     sql_table = Table(table_name, metadata, autoload=True, autoload_with=connection)
@@ -84,26 +99,53 @@ def from_sql(cls, connection_or_string, table_name):
 
     return agate.Table(rows, column_names, column_types)
 
-def make_sql_column(column_name, column_type):
+def make_sql_column(column_name, column, sql_column_kwargs={}):
     """
     Creates a sqlalchemy column from agate column data.
 
-    :param column_name: The name of the new column.
-    :param column_type: The agate type of the column.
+    :param column_name:
+        The name of the column.
+    :param column:
+        The agate column.
+    :param sql_column_kwargs:
+        Additional kwargs to passed through to the Column constructor, such as
+        ``nullable``.
     """
     sql_column_type = None
 
     for agate_type, sql_type in SQL_TYPE_MAP.items():
-        if isinstance(column_type, agate_type):
+        if isinstance(column.data_type, agate_type):
             sql_column_type = sql_type
             break
 
     if sql_column_type is None:
         raise ValueError('Unsupported column type: %s' % column_type)
 
-    return Column(column_name, sql_column_type())
+    return Column(column_name, sql_column_type(), **sql_column_kwargs)
 
-def to_sql(self, connection_or_string, table_name, overwrite=False):
+def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=True, connection=None):
+    """
+    Generates a SQL alchemy table from an agate table.
+    """
+    metadata = MetaData(connection)
+    sql_table = Table(table_name, metadata, schema=db_schema)
+
+    if dialect in INTERVAL_MAP.keys():
+        SQL_TYPE_MAP[agate.TimeDelta] = INTERVAL_MAP[dialect]
+    else:
+        SQL_TYPE_MAP[agate.TimeDelta] = Interval
+
+    for column_name, column in table.columns.items():
+        sql_column_kwargs = {}
+
+        if constraints:
+            sql_column_kwargs['nullable'] = table.aggregate(agate.HasNulls(column_name))
+
+        sql_table.append_column(make_sql_column(column_name, column, sql_column_kwargs))
+
+    return sql_table
+
+def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, insert=True, constraints=True):
     """
     Write this table to the given SQL database.
 
@@ -114,34 +156,75 @@ def to_sql(self, connection_or_string, table_name, overwrite=False):
     :param table_name:
         The name of the SQL table to create.
     :param overwrite:
-        If ``True``, any existing table with the same name will be dropped
-        and recreated.
+        Drop any existing table with the same name before creating.
+    :param create:
+        Create the table.
+    :param insert:
+        Insert table data.
+    :param constraints
+        Generate constraints such as ``nullable`` for table columns.
     """
-    if isinstance(connection_or_string, Connection):
-        connection = connection_or_string
-    else:
-        engine = create_engine(connection_or_string)
-        connection = engine.connect()
+    connection = get_connection(connection_or_string)
 
     dialect = connection.engine.dialect.name
-    metadata = MetaData(connection)
-    sql_table = Table(table_name, metadata)
+    sql_table = make_sql_table(self, table_name, dialect=dialect, constraints=constraints, connection=connection)
 
-    if dialect in INTERVAL_MAP.keys():
-        SQL_TYPE_MAP[agate.TimeDelta] = INTERVAL_MAP[dialect]
+    if create:
+        if overwrite:
+            sql_table.drop(checkfirst=True)
+
+        sql_table.create()
+
+    if insert:
+        insert = sql_table.insert()
+        connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+
+    return sql_table
+
+def to_sql_create_statement(self, table_name, dialect=None):
+    """
+    Generates a CREATE TABLE statement for this SQL table, but does not execute
+    it.
+    """
+    sql_table = make_sql_table(self, table_name, dialect=dialect)
+
+    if dialect:
+        sql_dialect = dialects.registry.load(dialect)()
     else:
-        SQL_TYPE_MAP[agate.TimeDelta] = Interval
+        sql_dialect = None
 
-    for column_name, column_type in zip(self.column_names, self.column_types):
-        sql_table.append_column(make_sql_column(column_name, column_type))
+    return six.text_type(CreateTable(sql_table).compile(dialect=sql_dialect)).strip() + ';'
 
-    if overwrite:
-        sql_table.drop(checkfirst=True)
+def sql_query(self, query, table_name='agate'):
+    """
+    Convert this agate table into an intermediate, in-memory sqlite table,
+    run a query against it, and then return the results as a new agate table.
 
-    sql_table.create()
+    Multiple queries may be separated with semicolons.
 
-    insert = sql_table.insert()
-    connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+    :param query:
+        One SQL query, or multiple queries to be run consecutively separated
+        with semicolons.
+    :param table_name:
+        The name to use for the table in the queries, defaults to ``agate``.
+    """
+    connection = get_connection()
+
+    # Execute the specified SQL queries
+    queries = query.split(';')
+    rows = None
+
+    sql_table = self.to_sql(connection, table_name)
+
+    for q in queries:
+        if q:
+            rows = connection.execute(q)
+
+    table = agate.Table(list(rows), column_names=rows._metadata.keys)
+
+    return table
 
 agate.Table.from_sql = classmethod(from_sql)
 agate.Table.to_sql = to_sql
+agate.Table.to_sql_create_statement = to_sql_create_statement
+agate.Table.sql_query = sql_query

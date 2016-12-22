@@ -30,7 +30,7 @@ class TestSQL(agate.AgateTestCase):
         self.table = agate.Table(self.rows, self.column_names, self.column_types)
         self.connection_string = 'sqlite:///:memory:'
 
-    def test_sql(self):
+    def test_back_and_forth(self):
         engine = create_engine(self.connection_string)
         connection = engine.connect()
 
@@ -47,3 +47,33 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertEqual(len(table.rows), len(self.table.rows))
         self.assertSequenceEqual(table.rows[0], self.table.rows[0])
+
+    def test_sql_query_simple(self):
+        results = self.table.sql_query('select * from agate')
+
+        self.assertColumnNames(results, self.table.column_names)
+        self.assertRows(results, self.table.rows)
+
+    def test_sql_query_limit(self):
+        results = self.table.sql_query('select * from agate limit 2')
+
+        self.assertColumnNames(results, self.table.column_names)
+        self.assertRows(results, self.table.rows[:2])
+
+    def test_sql_query_select(self):
+        results = self.table.sql_query('select number, boolean from agate')
+
+        self.assertColumnNames(results, ['number', 'boolean'])
+        self.assertColumnTypes(results, [agate.Number, agate.Boolean])
+        self.assertRows(results, [
+            [1, True],
+            [2, False],
+            [None, None]
+        ])
+
+    def test_sql_query_aggregate(self):
+        results = self.table.sql_query('select sum(number) as total from agate')
+
+        self.assertColumnNames(results, ['total'])
+        self.assertColumnTypes(results, [agate.Number])
+        self.assertRows(results, [[3]])
