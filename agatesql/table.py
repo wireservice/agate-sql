@@ -9,7 +9,7 @@ import decimal
 import datetime
 import six
 import agate
-from sqlalchemy import Column, MetaData, Table, create_engine
+from sqlalchemy import Column, MetaData, Table, create_engine, dialects
 from sqlalchemy.engine import Connection
 from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, DATETIME, VARCHAR, Interval
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
@@ -99,7 +99,28 @@ def from_sql(cls, connection_or_string, table_name):
 
     return agate.Table(rows, column_names, column_types)
 
-def make_sql_column(column_name, column, sql_column_kwargs={}):
+def from_sql_query(self, query):
+    """
+    Create an agate table from the results of a SQL query. Note that column
+    data types will be inferred from the returned data, not the column types
+    declared in SQL (if any). This is more flexible than :func:`.from_sql` but
+    could result in unexpected typing issues.
+
+    :param query:
+        A SQL query to execute.
+    """
+    connection = get_connection()
+
+    # Must escape '%'.
+    # @see https://github.com/wireservice/csvkit/issues/440
+    # @see https://bitbucket.org/zzzeek/sqlalchemy/commits/5bc1f17cb53248e7cea609693a3b2a9bb702545b
+    rows = connection.execute(query.replace('%', '%%'))
+
+    table = agate.Table(list(rows), column_names=rows._metadata.keys)
+
+    return table
+
+def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs=None):
     """
     Creates a sqlalchemy column from agate column data.
 
@@ -121,7 +142,10 @@ def make_sql_column(column_name, column, sql_column_kwargs={}):
     if sql_column_type is None:
         raise ValueError('Unsupported column type: %s' % column_type)
 
-    return Column(column_name, sql_column_type(), **sql_column_kwargs)
+    sql_type_kwargs = sql_type_kwargs or {}
+    sql_column_kwargs = sql_column_kwargs or {}
+
+    return Column(column_name, sql_column_type(**sql_type_kwargs), **sql_column_kwargs)
 
 def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=True, connection=None):
     """
@@ -136,16 +160,20 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
         SQL_TYPE_MAP[agate.TimeDelta] = Interval
 
     for column_name, column in table.columns.items():
+        sql_type_kwargs = {}
         sql_column_kwargs = {}
 
         if constraints:
+            if isinstance(column.data_type, agate.Text):
+                sql_type_kwargs['length'] = table.aggregate(agate.MaxLength(column_name))
+
             sql_column_kwargs['nullable'] = table.aggregate(agate.HasNulls(column_name))
 
-        sql_table.append_column(make_sql_column(column_name, column, sql_column_kwargs))
+        sql_table.append_column(make_sql_column(column_name, column, sql_type_kwargs, sql_column_kwargs))
 
     return sql_table
 
-def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, insert=True, constraints=True):
+def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, insert=True, db_schema=None, constraints=True):
     """
     Write this table to the given SQL database.
 
@@ -161,13 +189,15 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
         Create the table.
     :param insert:
         Insert table data.
+    :param db_schema:
+        Create table in the specified database schema.
     :param constraints
         Generate constraints such as ``nullable`` for table columns.
     """
     connection = get_connection(connection_or_string)
 
     dialect = connection.engine.dialect.name
-    sql_table = make_sql_table(self, table_name, dialect=dialect, constraints=constraints, connection=connection)
+    sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints, connection=connection)
 
     if create:
         if overwrite:
@@ -181,12 +211,12 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
 
     return sql_table
 
-def to_sql_create_statement(self, table_name, dialect=None):
-    """
+def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, constraints=True):
+    """``
     Generates a CREATE TABLE statement for this SQL table, but does not execute
     it.
     """
-    sql_table = make_sql_table(self, table_name, dialect=dialect)
+    sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints)
 
     if dialect:
         sql_dialect = dialects.registry.load(dialect)()
@@ -225,6 +255,7 @@ def sql_query(self, query, table_name='agate'):
     return table
 
 agate.Table.from_sql = classmethod(from_sql)
+agate.Table.from_sql_query = classmethod(from_sql_query)
 agate.Table.to_sql = to_sql
 agate.Table.to_sql_create_statement = to_sql_create_statement
 agate.Table.sql_query = sql_query

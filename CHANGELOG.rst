@@ -1,9 +1,11 @@
 0.5.0
 -----
 
+* ``VARCHAR`` columns are now generated with proper length constraints (unless explicilty disabled).
+* Tables can now be created from query results using :func:`.from_sql_query`
 * Add support for running queries directly on tables with :func:`.sql_query`.
 * When creating tables, ``NOT NULL`` constraints will be created by default.
-* SQL create statements can now be generated without being executed with :func:`to_sql_create_statement`
+* SQL create statements can now be generated without being executed with :func:`.to_sql_create_statement`
 
 0.4.0 - December 19, 2016
 -------------------------

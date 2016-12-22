@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+from pkg_resources import iter_entry_points
+
 try:
     import unittest2 as unittest
 except ImportError:
@@ -8,7 +10,9 @@ except ImportError:
 
 import agate
 import agatesql
+from agatesql.table import make_sql_column, make_sql_table
 from sqlalchemy import create_engine
+
 
 class TestSQL(agate.AgateTestCase):
     def setUp(self):
@@ -47,6 +51,40 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertEqual(len(table.rows), len(self.table.rows))
         self.assertSequenceEqual(table.rows[0], self.table.rows[0])
+
+    def test_to_sql_create_statement(self):
+        statement = self.table.to_sql_create_statement('test_table')
+
+        self.assertIn('CREATE TABLE test_table', statement)
+        self.assertIn('number DECIMAL', statement)
+        self.assertIn('text VARCHAR(1) NOT NULL', statement)
+        self.assertIn('boolean BOOLEAN', statement)
+        self.assertIn('date DATE', statement)
+        self.assertIn('datetime DATETIME', statement)
+
+    def test_make_create_table_statement_no_constraints(self):
+        statement = self.table.to_sql_create_statement('test_table', constraints=False)
+
+        self.assertIn('CREATE TABLE test_table', statement)
+        self.assertIn('number DECIMAL', statement)
+        self.assertIn('text VARCHAR', statement)
+        self.assertIn('boolean BOOLEAN', statement)
+        self.assertIn('date DATE', statement)
+        self.assertIn('datetime DATETIME', statement)
+
+    def test_make_create_table_statement_with_schema(self):
+        statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema')
+
+        self.assertIn('CREATE TABLE test_schema.test_table', statement)
+        self.assertIn('number DECIMAL', statement)
+        self.assertIn('text VARCHAR(1) NOT NULL', statement)
+        self.assertIn('boolean BOOLEAN', statement)
+        self.assertIn('date DATE', statement)
+        self.assertIn('datetime DATETIME', statement)
+
+    def test_make_create_table_statement_with_dialects(self):
+        for dialect in ['mysql', 'postgresql', 'sqlite']:
+            statement = self.table.to_sql_create_statement('test_table', dialect=dialect)
 
     def test_sql_query_simple(self):
         results = self.table.sql_query('select * from agate')
