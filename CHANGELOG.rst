@@ -1,5 +1,5 @@
-0.5.0
------
+0.5.0 - December 23, 2016
+-------------------------
 
 * ``VARCHAR`` columns are now generated with proper length constraints (unless explicilty disabled).
 * Tables can now be created from query results using :func:`.from_sql_query`
