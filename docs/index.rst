@@ -50,7 +50,14 @@ API
 ===
 
 .. autofunction:: agatesql.table.from_sql
+
+.. autofunction:: agatesql.table.from_sql_query
+
 .. autofunction:: agatesql.table.to_sql
+
+.. autofunction:: agatesql.table.to_sql_create_statement
+
+.. autofunction:: agatesql.table.sql_query
 
 Authors
 =======

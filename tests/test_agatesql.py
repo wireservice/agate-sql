@@ -18,7 +18,9 @@ class TestSQL(agate.AgateTestCase):
     def setUp(self):
         self.rows = (
             (1, 'a', True, '11/4/2015', '11/4/2015 12:22 PM'),
-            (2, u'👍', False, '11/5/2015', '11/4/2015 12:45 PM'),
+            # See issue #18
+            # (2, u'👍', False, '11/5/2015', '11/4/2015 12:45 PM'),
+            (2, u'c', False, '11/5/2015', '11/4/2015 12:45 PM'),
             (None, 'b', None, None, None)
         )
 
@@ -54,6 +56,10 @@ class TestSQL(agate.AgateTestCase):
 
     def test_to_sql_create_statement(self):
         statement = self.table.to_sql_create_statement('test_table')
+
+        print(self.rows[1][1])
+        print(self.table.columns[1].values())
+        print(statement)
 
         self.assertIn('CREATE TABLE test_table', statement)
         self.assertIn('number DECIMAL', statement)

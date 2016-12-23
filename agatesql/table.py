@@ -212,9 +212,18 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
     return sql_table
 
 def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, constraints=True):
-    """``
+    """
     Generates a CREATE TABLE statement for this SQL table, but does not execute
     it.
+
+    :param table_name:
+        The name of the SQL table to create.
+    :param dialect:
+        The dialect of SQL to use for the table statement.
+    :param db_schema:
+        Create table in the specified database schema.
+    :param constraints
+        Generate constraints such as ``nullable`` for table columns.
     """
     sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints)
 
