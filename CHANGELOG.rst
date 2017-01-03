@@ -1,13 +1,13 @@
 0.5.1
 -----
 
-
+* Add ``prefixes`` option to :func:`.to_sql`.
 
 0.5.0 - December 23, 2016
 -------------------------
 
 * ``VARCHAR`` columns are now generated with proper length constraints (unless explicilty disabled).
-* Tables can now be created from query results using :func:`.from_sql_query`
+* Tables can now be created from query results using :func:`.from_sql_query`.
 * Add support for running queries directly on tables with :func:`.sql_query`.
 * When creating tables, ``NOT NULL`` constraints will be created by default.
 * SQL create statements can now be generated without being executed with :func:`.to_sql_create_statement`
