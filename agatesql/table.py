@@ -167,7 +167,10 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
             if isinstance(column.data_type, agate.Text):
                 sql_type_kwargs['length'] = table.aggregate(agate.MaxLength(column_name))
 
-            sql_column_kwargs['nullable'] = table.aggregate(agate.HasNulls(column_name))
+            # Avoid errors due to NO_ZERO_DATE.
+            # @see http://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
+            if not isinstance(column.data_type, agate.DateTime):
+                sql_column_kwargs['nullable'] = table.aggregate(agate.HasNulls(column_name))
 
         sql_table.append_column(make_sql_column(column_name, column, sql_type_kwargs, sql_column_kwargs))
 
