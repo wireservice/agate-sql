@@ -11,7 +11,7 @@ import six
 import agate
 from sqlalchemy import Column, MetaData, Table, create_engine, dialects
 from sqlalchemy.engine import Connection
-from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, DATETIME, VARCHAR, Interval
+from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, TIMESTAMP, VARCHAR, Interval
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
 from sqlalchemy.dialects.postgresql import INTERVAL as POSTGRES_INTERVAL
 from sqlalchemy.schema import CreateTable
@@ -21,7 +21,7 @@ SQL_TYPE_MAP = {
     agate.Boolean: BOOLEAN,
     agate.Number: DECIMAL,
     agate.Date: DATE,
-    agate.DateTime: DATETIME,
+    agate.DateTime: TIMESTAMP,
     agate.TimeDelta: None,  # See below
     agate.Text: VARCHAR
 }
