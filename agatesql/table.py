@@ -176,7 +176,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
 
     return sql_table
 
-def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, insert=True, db_schema=None, constraints=True):
+def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, insert=True, prefixes=[], db_schema=None, constraints=True):
     """
     Write this table to the given SQL database.
 
@@ -192,6 +192,8 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
         Create the table.
     :param insert:
         Insert table data.
+    :param prefixes:
+        Add prefixes to the insert query.
     :param db_schema:
         Create table in the specified database schema.
     :param constraints
@@ -210,6 +212,8 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
 
     if insert:
         insert = sql_table.insert()
+        for prefix in prefixes:
+            insert.prefix_with(prefix)
         connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
 
     return sql_table
