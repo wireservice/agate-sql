@@ -66,7 +66,7 @@ class TestSQL(agate.AgateTestCase):
         self.assertIn('text VARCHAR(1) NOT NULL', statement)
         self.assertIn('boolean BOOLEAN', statement)
         self.assertIn('date DATE', statement)
-        self.assertIn('datetime DATETIME', statement)
+        self.assertIn('datetime TIMESTAMP', statement)
 
     def test_make_create_table_statement_no_constraints(self):
         statement = self.table.to_sql_create_statement('test_table', constraints=False)
@@ -76,7 +76,7 @@ class TestSQL(agate.AgateTestCase):
         self.assertIn('text VARCHAR', statement)
         self.assertIn('boolean BOOLEAN', statement)
         self.assertIn('date DATE', statement)
-        self.assertIn('datetime DATETIME', statement)
+        self.assertIn('datetime TIMESTAMP', statement)
 
     def test_make_create_table_statement_with_schema(self):
         statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema')
@@ -86,7 +86,7 @@ class TestSQL(agate.AgateTestCase):
         self.assertIn('text VARCHAR(1) NOT NULL', statement)
         self.assertIn('boolean BOOLEAN', statement)
         self.assertIn('date DATE', statement)
-        self.assertIn('datetime DATETIME', statement)
+        self.assertIn('datetime TIMESTAMP', statement)
 
     def test_make_create_table_statement_with_dialects(self):
         for dialect in ['mysql', 'postgresql', 'sqlite']:
