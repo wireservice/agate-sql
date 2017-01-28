@@ -213,7 +213,7 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
     if insert:
         insert = sql_table.insert()
         for prefix in prefixes:
-            insert.prefix_with(prefix)
+            insert = insert.prefix_with(prefix)
         connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
 
     return sql_table
