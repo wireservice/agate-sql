@@ -1,7 +1,8 @@
 0.5.1
 -----
 
-* Add ``prefixes`` option to :func:`.to_sql`.
+* Add ``prefixes`` option to :func:`.to_sql` to add expressions following the INSERT keyword, like OR IGNORE or OR REPLACE.
+* Use ``TIMESTAMP`` instead of ``DATETIME`` for DateTime columns.
 
 0.5.0 - December 23, 2016
 -------------------------
