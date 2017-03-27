@@ -6,3 +6,4 @@ The following individuals have contributed code to agate-sql:
 * `Chris Keller <https://github.com/chrislkeller>`_
 * `git-clueless <https://github.com/git-clueless>`_
 * `z2s8 <https://github.com/z2s8>`_
+* `Jake Zimmerman <https://github.com/jez>`_

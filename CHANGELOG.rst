@@ -1,7 +1,7 @@
 0.5.2
 -----
 
-
+* Add ``create_if_not_exists`` flag to :meth:`.TableSQL.to_sql`.
 
 0.5.1 -  February 27, 2017
 --------------------------

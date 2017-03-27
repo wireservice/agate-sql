@@ -176,7 +176,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
 
     return sql_table
 
-def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, insert=True, prefixes=[], db_schema=None, constraints=True):
+def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, create_if_not_exists=False, insert=True, prefixes=[], db_schema=None, constraints=True):
     """
     Write this table to the given SQL database.
 
@@ -190,6 +190,8 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
         Drop any existing table with the same name before creating.
     :param create:
         Create the table.
+    :param create_if_not_exists:
+        When creating the table, don't fail if the table already exists.
     :param insert:
         Insert table data.
     :param prefixes:
@@ -208,7 +210,7 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
         if overwrite:
             sql_table.drop(checkfirst=True)
 
-        sql_table.create()
+        sql_table.create(checkfirst=create_if_not_exists)
 
     if insert:
         insert = sql_table.insert()
