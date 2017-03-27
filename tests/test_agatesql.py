@@ -54,6 +54,28 @@ class TestSQL(agate.AgateTestCase):
         self.assertEqual(len(table.rows), len(self.table.rows))
         self.assertSequenceEqual(table.rows[0], self.table.rows[0])
 
+    def test_create_if_not_exists(self):
+        column_names = ['id', 'name']
+        column_types = [agate.Number(), agate.Text()]
+        rows1 = (
+            (1, 'Jake'),
+            (2, 'Howard'),
+        )
+        rows2 = (
+            (3, 'Liz'),
+            (4, 'Tim'),
+        )
+
+        table1 = agate.Table(rows1, column_names, column_types)
+        table2 = agate.Table(rows2, column_names, column_types)
+
+        engine = create_engine(self.connection_string)
+        connection = engine.connect()
+
+        # Write two agate tables into the same SQL table
+        table1.to_sql(connection, 'create_if_not_exists_test', create=True, create_if_not_exists=True, insert=True)
+        table2.to_sql(connection, 'create_if_not_exists_test', create=True, create_if_not_exists=True, insert=True)
+
     def test_to_sql_create_statement(self):
         statement = self.table.to_sql_create_statement('test_table')
 
