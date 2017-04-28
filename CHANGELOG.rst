@@ -1,10 +1,10 @@
-0.5.2
------
+0.5.2 - April 28, 2017
+----------------------
 
 * Add ``create_if_not_exists`` flag to :meth:`.TableSQL.to_sql`.
 
-0.5.1 -  February 27, 2017
---------------------------
+0.5.1 - February 27, 2017
+-------------------------
 
 * Add ``prefixes`` option to :func:`.to_sql` to add expressions following the INSERT keyword, like OR IGNORE or OR REPLACE.
 * Use ``TIMESTAMP`` instead of ``DATETIME`` for DateTime columns.
