@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+from decimal import Decimal
 from pkg_resources import iter_entry_points
 
 try:
@@ -17,7 +18,7 @@ from sqlalchemy import create_engine
 class TestSQL(agate.AgateTestCase):
     def setUp(self):
         self.rows = (
-            (1, 'a', True, '11/4/2015', '11/4/2015 12:22 PM'),
+            (1.123, 'a', True, '11/4/2015', '11/4/2015 12:22 PM'),
             # See issue #18
             # (2, u'👍', False, '11/5/2015', '11/4/2015 12:45 PM'),
             (2, u'c', False, '11/5/2015', '11/4/2015 12:45 PM'),
@@ -79,35 +80,31 @@ class TestSQL(agate.AgateTestCase):
     def test_to_sql_create_statement(self):
         statement = self.table.to_sql_create_statement('test_table')
 
-        print(self.rows[1][1])
-        print(self.table.columns[1].values())
-        print(statement)
-
         self.assertIn('CREATE TABLE test_table', statement)
-        self.assertIn('number DECIMAL', statement)
-        self.assertIn('text VARCHAR(1) NOT NULL', statement)
-        self.assertIn('boolean BOOLEAN', statement)
-        self.assertIn('date DATE', statement)
+        self.assertIn('number DECIMAL,', statement)
+        self.assertIn('text VARCHAR(1) NOT NULL,', statement)
+        self.assertIn('boolean BOOLEAN,', statement)
+        self.assertIn('date DATE,', statement)
         self.assertIn('datetime TIMESTAMP', statement)
 
     def test_make_create_table_statement_no_constraints(self):
         statement = self.table.to_sql_create_statement('test_table', constraints=False)
 
         self.assertIn('CREATE TABLE test_table', statement)
-        self.assertIn('number DECIMAL', statement)
-        self.assertIn('text VARCHAR', statement)
-        self.assertIn('boolean BOOLEAN', statement)
-        self.assertIn('date DATE', statement)
+        self.assertIn('number DECIMAL,', statement)
+        self.assertIn('text VARCHAR,', statement)
+        self.assertIn('boolean BOOLEAN,', statement)
+        self.assertIn('date DATE,', statement)
         self.assertIn('datetime TIMESTAMP', statement)
 
     def test_make_create_table_statement_with_schema(self):
-        statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema')
+        statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
 
         self.assertIn('CREATE TABLE test_schema.test_table', statement)
-        self.assertIn('number DECIMAL', statement)
-        self.assertIn('text VARCHAR(1) NOT NULL', statement)
-        self.assertIn('boolean BOOLEAN', statement)
-        self.assertIn('date DATE', statement)
+        self.assertIn('number DECIMAL(38, 3),', statement)
+        self.assertIn('text VARCHAR(1) NOT NULL,', statement)
+        self.assertIn('boolean BOOL,', statement)
+        self.assertIn('date DATE,', statement)
         self.assertIn('datetime TIMESTAMP', statement)
 
     def test_make_create_table_statement_with_dialects(self):
@@ -132,7 +129,7 @@ class TestSQL(agate.AgateTestCase):
         self.assertColumnNames(results, ['number', 'boolean'])
         self.assertColumnTypes(results, [agate.Number, agate.Boolean])
         self.assertRows(results, [
-            [1, True],
+            [Decimal('1.123'), True],
             [2, False],
             [None, None]
         ])
@@ -142,4 +139,4 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertColumnNames(results, ['total'])
         self.assertColumnTypes(results, [agate.Number])
-        self.assertRows(results, [[3]])
+        self.assertRows(results, [[Decimal('3.123')]])
