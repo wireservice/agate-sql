@@ -1,6 +1,8 @@
 0.5.3
 -----
 
+* Specify precision and scale for ``DECIMAL`` if the dialect is ``mssql``, ``mysql`` or ``oracle``.
+
 0.5.2 - April 28, 2017
 ----------------------
 

@@ -167,6 +167,19 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
             if isinstance(column.data_type, agate.Text):
                 sql_type_kwargs['length'] = table.aggregate(agate.MaxLength(column_name))
 
+            # PostgreSQL and SQLite don't have scale default 0.
+            # @see https://www.postgresql.org/docs/9.2/static/datatype-numeric.html
+            # @see https://www.sqlite.org/datatype3.html
+            if isinstance(column.data_type, agate.Number) and dialect in ('mssql', 'mysql', 'oracle'):
+                # MySQL has precision range 1-65 and default 10, scale default 0.
+                # @see https://dev.mysql.com/doc/refman/5.7/en/fixed-point-types.html
+                # Oracle has precision range 1-38 and default 38, scale default 0.
+                # @see https://docs.oracle.com/cd/B28359_01/server.111/b28318/datatype.htm#CNCPT1832
+                # SQL Server has range 1-38 and default 18, scale default 0.
+                # @see https://docs.microsoft.com/en-us/sql/t-sql/data-types/decimal-and-numeric-transact-sql
+                sql_type_kwargs['precision'] = 38
+                sql_type_kwargs['scale'] = table.aggregate(agate.MaxPrecision(column_name))
+
             # Avoid errors due to NO_ZERO_DATE.
             # @see http://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
             if not isinstance(column.data_type, agate.DateTime):
