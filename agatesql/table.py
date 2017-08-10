@@ -170,6 +170,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
 
         if constraints:
             if isinstance(column.data_type, agate.Text):
+                # If length is zero, SQLAlchemy may raise "VARCHAR requires a length on dialect mysql".
                 sql_type_kwargs['length'] = table.aggregate(agate.MaxLength(column_name)) or 1
 
             # PostgreSQL and SQLite don't have scale default 0.
