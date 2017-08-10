@@ -31,6 +31,7 @@ INTERVAL_MAP = {
     'oracle': ORACLE_INTERVAL
 }
 
+
 def get_connection(connection_or_string=None):
     """
     Gets a connection to a specific SQL alchemy backend. If an existing
@@ -47,6 +48,7 @@ def get_connection(connection_or_string=None):
         connection = engine.connect()
 
     return connection
+
 
 def from_sql(cls, connection_or_string, table_name):
     """
@@ -99,6 +101,7 @@ def from_sql(cls, connection_or_string, table_name):
 
     return agate.Table(rows, column_names, column_types)
 
+
 def from_sql_query(self, query):
     """
     Create an agate table from the results of a SQL query. Note that column
@@ -120,6 +123,7 @@ def from_sql_query(self, query):
 
     return table
 
+
 def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs=None):
     """
     Creates a sqlalchemy column from agate column data.
@@ -140,12 +144,13 @@ def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs
             break
 
     if sql_column_type is None:
-        raise ValueError('Unsupported column type: %s' % column_type)
+        raise ValueError('Unsupported column type: %s' % sql_column_type)
 
     sql_type_kwargs = sql_type_kwargs or {}
     sql_column_kwargs = sql_column_kwargs or {}
 
     return Column(column_name, sql_column_type(**sql_type_kwargs), **sql_column_kwargs)
+
 
 def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=True, connection=None):
     """
@@ -188,6 +193,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
         sql_table.append_column(make_sql_column(column_name, column, sql_type_kwargs, sql_column_kwargs))
 
     return sql_table
+
 
 def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, create_if_not_exists=False, insert=True, prefixes=[], db_schema=None, constraints=True):
     """
@@ -233,6 +239,7 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
 
     return sql_table
 
+
 def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, constraints=True):
     """
     Generates a CREATE TABLE statement for this SQL table, but does not execute
@@ -256,6 +263,7 @@ def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, cons
 
     return six.text_type(CreateTable(sql_table).compile(dialect=sql_dialect)).strip() + ';'
 
+
 def sql_query(self, query, table_name='agate'):
     """
     Convert this agate table into an intermediate, in-memory sqlite table,
@@ -275,7 +283,7 @@ def sql_query(self, query, table_name='agate'):
     queries = query.split(';')
     rows = None
 
-    sql_table = self.to_sql(connection, table_name)
+    self.to_sql(connection, table_name)
 
     for q in queries:
         if q:
@@ -284,6 +292,7 @@ def sql_query(self, query, table_name='agate'):
     table = agate.Table(list(rows), column_names=rows._metadata.keys)
 
     return table
+
 
 agate.Table.from_sql = classmethod(from_sql)
 agate.Table.from_sql_query = classmethod(from_sql_query)

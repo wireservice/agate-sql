@@ -2,16 +2,9 @@
 # -*- coding: utf8 -*-
 
 from decimal import Decimal
-from pkg_resources import iter_entry_points
-
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
 
 import agate
-import agatesql
-from agatesql.table import make_sql_column, make_sql_table
+import agatesql  # noqa
 from sqlalchemy import create_engine
 
 
@@ -87,7 +80,7 @@ class TestSQL(agate.AgateTestCase):
         self.assertIn('date DATE,', statement)
         self.assertIn('datetime TIMESTAMP', statement)
 
-    def test_make_create_table_statement_no_constraints(self):
+    def test_to_sql_create_statement_no_constraints(self):
         statement = self.table.to_sql_create_statement('test_table', constraints=False)
 
         self.assertIn('CREATE TABLE test_table', statement)
@@ -97,7 +90,7 @@ class TestSQL(agate.AgateTestCase):
         self.assertIn('date DATE,', statement)
         self.assertIn('datetime TIMESTAMP', statement)
 
-    def test_make_create_table_statement_with_schema(self):
+    def test_to_sql_create_statement_with_schema(self):
         statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
 
         self.assertIn('CREATE TABLE test_schema.test_table', statement)
@@ -107,9 +100,9 @@ class TestSQL(agate.AgateTestCase):
         self.assertIn('date DATE,', statement)
         self.assertIn('datetime TIMESTAMP', statement)
 
-    def test_make_create_table_statement_with_dialects(self):
+    def test_to_sql_create_statement_with_dialects(self):
         for dialect in ['mysql', 'postgresql', 'sqlite']:
-            statement = self.table.to_sql_create_statement('test_table', dialect=dialect)
+            self.table.to_sql_create_statement('test_table', dialect=dialect)
 
     def test_sql_query_simple(self):
         results = self.table.sql_query('select * from agate')
