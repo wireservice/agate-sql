@@ -170,7 +170,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
 
         if constraints:
             if isinstance(column.data_type, agate.Text):
-                sql_type_kwargs['length'] = table.aggregate(agate.MaxLength(column_name))
+                sql_type_kwargs['length'] = table.aggregate(agate.MaxLength(column_name)) or 1
 
             # PostgreSQL and SQLite don't have scale default 0.
             # @see https://www.postgresql.org/docs/9.2/static/datatype-numeric.html

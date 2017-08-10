@@ -2,6 +2,7 @@
 -----
 
 * Specify precision and scale for ``DECIMAL`` if the dialect is ``mssql``, ``mysql`` or ``oracle``.
+* Set length of ``VARCHAR`` to ``1`` even if maximum length is ``0`` to satisfy MySQL.
 
 0.5.2 - April 28, 2017
 ----------------------
