@@ -228,6 +228,8 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
         Create table in the specified database schema.
     :param constraints
         Generate constraints such as ``nullable`` for table columns.
+    :param chunksize
+        If not None, then rows will be written in batches of this size at a time. If None, all rows will be written at once.
     """
     engine, connection = get_connection(connection_or_string)
 
