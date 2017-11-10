@@ -168,7 +168,7 @@ class TestSQL(agate.AgateTestCase):
             for chunksize in [11, 100, 9, 231]:
                 # insert data with chunksize
                 table = agate.Table(rows, column_names, column_types)
-                table.to_sql(connection, 'test_chunksize', overwrite=True, chunksize=11)
+                table.to_sql(connection, 'test_chunksize', overwrite=True, chunksize=chunksize)
 
                 table = agate.Table.from_sql(connection, 'test_chunksize')
                 total = 0
