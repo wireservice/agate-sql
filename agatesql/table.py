@@ -202,7 +202,9 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
     return sql_table
 
 
-def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, create_if_not_exists=False, insert=True, prefixes=[], db_schema=None, constraints=True):
+def to_sql(self, connection_or_string, table_name, overwrite=False,
+           create=True, create_if_not_exists=False, insert=True, prefixes=[],
+           db_schema=None, constraints=True, chunksize=None):
     """
     Write this table to the given SQL database.
 
@@ -242,7 +244,15 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
         insert = sql_table.insert()
         for prefix in prefixes:
             insert = insert.prefix_with(prefix)
-        connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+        if chunksize is None:
+            connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+        else:
+            rowlen = len(self.rows)
+            for idx in range((rowlen-1)//chunksize+1):
+                end_of_idx = rowlen if (idx+1)*chunksize > rowlen else (idx+1)*chunksize
+                connection.execute(insert,
+                    [dict(zip(self.column_names, row)) for row in self.rows[
+                                                                  idx*chunksize:end_of_idx]])
 
     try:
         return sql_table
@@ -311,3 +321,4 @@ agate.Table.from_sql_query = classmethod(from_sql_query)
 agate.Table.to_sql = to_sql
 agate.Table.to_sql_create_statement = to_sql_create_statement
 agate.Table.sql_query = sql_query
+
