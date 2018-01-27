@@ -7,3 +7,4 @@ The following individuals have contributed code to agate-sql:
 * `git-clueless <https://github.com/git-clueless>`_
 * `z2s8 <https://github.com/z2s8>`_
 * `Jake Zimmerman <https://github.com/jez>`_
+* `Shige Takeda <https://github.com/smtakeda>`_

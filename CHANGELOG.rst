@@ -3,11 +3,12 @@
 
 * Specify precision and scale for ``DECIMAL`` if the dialect is ``mssql``, ``mysql`` or ``oracle``.
 * Set length of ``VARCHAR`` to ``1`` even if maximum length is ``0`` to satisfy MySQL.
+* Add ``chunksize`` option to :meth:`.Table.to_sql`.
 
 0.5.2 - April 28, 2017
 ----------------------
 
-* Add ``create_if_not_exists`` flag to :meth:`.TableSQL.to_sql`.
+* Add ``create_if_not_exists`` flag to :meth:`.Table.to_sql`.
 
 0.5.1 - February 27, 2017
 -------------------------
@@ -34,7 +35,7 @@
 0.3.0 - November 5, 2015
 ------------------------
 
-* Add ``overwrite`` flag to :meth:`.TableSQL.to_sql`.
+* Add ``overwrite`` flag to :meth:`.Table.to_sql`.
 * Removed Python 2.6 support.
 * Updated agate dependency to version 1.1.0.
 * Additional SQL types are now supported. (#4, #10)
