@@ -179,4 +179,3 @@ class TestSQL(agate.AgateTestCase):
         finally:
             connection.close()
             engine.dispose()
-

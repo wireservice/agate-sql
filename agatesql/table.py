@@ -229,12 +229,13 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
     :param constraints
         Generate constraints such as ``nullable`` for table columns.
     :param chunksize
-        If not None, then rows will be written in batches of this size at a time. If None, all rows will be written at once.
+        If not None, rows will be written in batches of this size. If None, rows will be written at once.
     """
     engine, connection = get_connection(connection_or_string)
 
     dialect = connection.engine.dialect.name
-    sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints, connection=connection)
+    sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
+                               connection=connection)
 
     if create:
         if overwrite:
@@ -250,11 +251,10 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
             connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
         else:
             rowlen = len(self.rows)
-            for idx in range((rowlen-1)//chunksize+1):
-                end_of_idx = rowlen if (idx+1)*chunksize > rowlen else (idx+1)*chunksize
-                connection.execute(insert,
-                    [dict(zip(self.column_names, row)) for row in self.rows[
-                                                                  idx*chunksize:end_of_idx]])
+            for idx in range((rowlen - 1) // chunksize + 1):
+                end_of_idx = rowlen if (idx + 1) * chunksize > rowlen else (idx + 1) * chunksize
+                connection.execute(insert, [dict(zip(self.column_names, row)) for row in
+                                            self.rows[idx * chunksize:end_of_idx]])
 
     try:
         return sql_table
@@ -323,4 +323,3 @@ agate.Table.from_sql_query = classmethod(from_sql_query)
 agate.Table.to_sql = to_sql
 agate.Table.to_sql_create_statement = to_sql_create_statement
 agate.Table.sql_query = sql_query
-
