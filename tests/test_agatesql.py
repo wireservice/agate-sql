@@ -149,3 +149,34 @@ class TestSQL(agate.AgateTestCase):
         self.assertColumnNames(results, ['total'])
         self.assertColumnTypes(results, [agate.Number])
         self.assertRows(results, [[Decimal('3.123')]])
+
+    def test_chunksize(self):
+        column_names = ['number']
+        column_types = [agate.Number()]
+
+        n = 9999
+        rows = []
+        ref_total = 0
+        for k in range(n):
+            rows.append((k,))
+            ref_total += k
+
+        engine = create_engine(self.connection_string)
+        connection = engine.connect()
+
+        try:
+            for chunksize in [11, 100, 9, 231]:
+                # insert data with chunksize
+                table = agate.Table(rows, column_names, column_types)
+                table.to_sql(connection, 'test_chunksize', overwrite=True, chunksize=chunksize)
+
+                table = agate.Table.from_sql(connection, 'test_chunksize')
+                total = 0
+                for r in table.rows:
+                    total += int(r[0])
+                self.assertEqual(len(table.rows), len(rows), "Number of rows")
+                self.assertEqual(ref_total, total, "Sum of all values")
+        finally:
+            connection.close()
+            engine.dispose()
+

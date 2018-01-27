@@ -41,13 +41,14 @@ def get_connection(connection_or_string=None):
     if connection_or_string is None:
         engine = create_engine('sqlite:///:memory:')
         connection = engine.connect()
+        return None, connection
     elif isinstance(connection_or_string, Connection):
         connection = connection_or_string
-    else:
-        engine = create_engine(connection_or_string)
-        connection = engine.connect()
+        return None, connection
 
-    return connection
+    engine = create_engine(connection_or_string)
+    connection = engine.connect()
+    return engine, connection
 
 
 def from_sql(cls, connection_or_string, table_name):
@@ -62,7 +63,7 @@ def from_sql(cls, connection_or_string, table_name):
     :param table_name:
         The name of a table in the referenced database.
     """
-    connection = get_connection(connection_or_string)
+    engine, connection = get_connection(connection_or_string)
 
     metadata = MetaData(connection)
     sql_table = Table(table_name, metadata, autoload=True, autoload_with=connection)
@@ -99,7 +100,12 @@ def from_sql(cls, connection_or_string, table_name):
 
     rows = connection.execute(s)
 
-    return agate.Table(rows, column_names, column_types)
+    try:
+        return agate.Table(rows, column_names, column_types)
+    finally:
+        if engine is not None:
+            connection.close()
+            engine.dispose()
 
 
 def from_sql_query(self, query):
@@ -112,7 +118,7 @@ def from_sql_query(self, query):
     :param query:
         A SQL query to execute.
     """
-    connection = get_connection()
+    _, connection = get_connection()
 
     # Must escape '%'.
     # @see https://github.com/wireservice/csvkit/issues/440
@@ -196,7 +202,9 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
     return sql_table
 
 
-def to_sql(self, connection_or_string, table_name, overwrite=False, create=True, create_if_not_exists=False, insert=True, prefixes=[], db_schema=None, constraints=True):
+def to_sql(self, connection_or_string, table_name, overwrite=False,
+           create=True, create_if_not_exists=False, insert=True, prefixes=[],
+           db_schema=None, constraints=True, chunksize=None):
     """
     Write this table to the given SQL database.
 
@@ -220,8 +228,10 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
         Create table in the specified database schema.
     :param constraints
         Generate constraints such as ``nullable`` for table columns.
+    :param chunksize
+        If not None, then rows will be written in batches of this size at a time. If None, all rows will be written at once.
     """
-    connection = get_connection(connection_or_string)
+    engine, connection = get_connection(connection_or_string)
 
     dialect = connection.engine.dialect.name
     sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints, connection=connection)
@@ -236,9 +246,22 @@ def to_sql(self, connection_or_string, table_name, overwrite=False, create=True,
         insert = sql_table.insert()
         for prefix in prefixes:
             insert = insert.prefix_with(prefix)
-        connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+        if chunksize is None:
+            connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+        else:
+            rowlen = len(self.rows)
+            for idx in range((rowlen-1)//chunksize+1):
+                end_of_idx = rowlen if (idx+1)*chunksize > rowlen else (idx+1)*chunksize
+                connection.execute(insert,
+                    [dict(zip(self.column_names, row)) for row in self.rows[
+                                                                  idx*chunksize:end_of_idx]])
 
-    return sql_table
+    try:
+        return sql_table
+    finally:
+        if engine is not None:
+            connection.close()
+            engine.dispose()
 
 
 def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, constraints=True):
@@ -278,7 +301,7 @@ def sql_query(self, query, table_name='agate'):
     :param table_name:
         The name to use for the table in the queries, defaults to ``agate``.
     """
-    connection = get_connection()
+    _, connection = get_connection()
 
     # Execute the specified SQL queries
     queries = query.split(';')
@@ -300,3 +323,4 @@ agate.Table.from_sql_query = classmethod(from_sql_query)
 agate.Table.to_sql = to_sql
 agate.Table.to_sql_create_statement = to_sql_create_statement
 agate.Table.sql_query = sql_query
+
