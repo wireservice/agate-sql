@@ -1,5 +1,8 @@
-0.5.3
+0.5.4
 -----
+
+0.5.3 - January 28, 2018
+------------------------
 
 * Add ``chunk_size`` option to :meth:`.Table.to_sql` to write rows in batches.
 * Add ``unique_constraint`` option to :meth:`.Table.to_sql` to include in a UNIQUE constraint.

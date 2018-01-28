@@ -108,7 +108,7 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_table (
   number DECIMAL, 
-  text VARCHAR(1) NOT NULL, 
+  text VARCHAR NOT NULL, 
   boolean BOOLEAN, 
   date DATE, 
   datetime TIMESTAMP
@@ -130,7 +130,7 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_table (
   number DECIMAL, 
-  text VARCHAR(1) NOT NULL, 
+  text VARCHAR NOT NULL, 
   boolean BOOLEAN, 
   date DATE, 
   datetime TIMESTAMP, 
