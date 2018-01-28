@@ -6,6 +6,7 @@ from decimal import Decimal
 import agate
 import agatesql  # noqa
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 
 
 class TestSQL(agate.AgateTestCase):
@@ -68,6 +69,39 @@ class TestSQL(agate.AgateTestCase):
         # Write two agate tables into the same SQL table
         table1.to_sql(connection, 'create_if_not_exists_test', create=True, create_if_not_exists=True, insert=True)
         table2.to_sql(connection, 'create_if_not_exists_test', create=True, create_if_not_exists=True, insert=True)
+
+        table = agate.Table.from_sql(connection, 'create_if_not_exists_test')
+        self.assertSequenceEqual(table.column_names, column_names)
+        self.assertIsInstance(table.column_types[0], agate.Number)
+        self.assertIsInstance(table.column_types[1], agate.Text)
+        self.assertEqual(len(table.rows), len(table1.rows) + len(table1.rows))
+        self.assertSequenceEqual(table.rows[0], table1.rows[0])
+
+    def test_unique_constraint(self):
+        engine = create_engine(self.connection_string)
+        connection = engine.connect()
+
+        with self.assertRaises(IntegrityError):
+            self.table.to_sql(connection, 'unique_constraint_test', unique_constraint=['number'])
+
+    def test_prefixes(self):
+        engine = create_engine(self.connection_string)
+        connection = engine.connect()
+
+        self.table.to_sql(connection, 'prefixes_test', prefixes=['OR REPLACE'],
+                          unique_constraint=['number'])
+
+        table = agate.Table.from_sql(connection, 'prefixes_test')
+
+        self.assertSequenceEqual(table.column_names, self.column_names)
+        self.assertIsInstance(table.column_types[0], agate.Number)
+        self.assertIsInstance(table.column_types[1], agate.Text)
+        self.assertIsInstance(table.column_types[2], agate.Boolean)
+        self.assertIsInstance(table.column_types[3], agate.Date)
+        self.assertIsInstance(table.column_types[4], agate.DateTime)
+
+        self.assertEqual(len(table.rows), len(self.table.rows) - 1)
+        self.assertSequenceEqual(table.rows[1], self.table.rows[2])
 
     def test_to_sql_create_statement(self):
         statement = self.table.to_sql_create_statement('test_table')
