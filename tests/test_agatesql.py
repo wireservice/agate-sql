@@ -12,19 +12,18 @@ class TestSQL(agate.AgateTestCase):
     def setUp(self):
         self.rows = (
             (1.123, 'a', True, '11/4/2015', '11/4/2015 12:22 PM'),
-            # See issue #18
-            # (2, u'👍', False, '11/5/2015', '11/4/2015 12:45 PM'),
+            (2, u'👍', False, '11/5/2015', '11/4/2015 12:45 PM'),
             (2, u'c', False, '11/5/2015', '11/4/2015 12:45 PM'),
-            (None, 'b', None, None, None)
+            (None, 'b', None, None, None),
         )
 
         self.column_names = [
-            'number', 'text', 'boolean', 'date', 'datetime'
+            'number', 'text', 'boolean', 'date', 'datetime',
         ]
 
         self.column_types = [
             agate.Number(), agate.Text(), agate.Boolean(),
-            agate.Date(), agate.DateTime()
+            agate.Date(), agate.DateTime(),
         ]
 
         self.table = agate.Table(self.rows, self.column_names, self.column_types)
@@ -140,7 +139,8 @@ class TestSQL(agate.AgateTestCase):
         self.assertRows(results, [
             [Decimal('1.123'), True],
             [2, False],
-            [None, None]
+            [2, False],
+            [None, None],
         ])
 
     def test_sql_query_aggregate(self):
@@ -148,7 +148,7 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertColumnNames(results, ['total'])
         self.assertColumnTypes(results, [agate.Number])
-        self.assertRows(results, [[Decimal('3.123')]])
+        self.assertRows(results, [[Decimal('5.123')]])
 
     def test_chunksize(self):
         column_names = ['number']
