@@ -1,11 +1,14 @@
 0.5.3
 -----
 
-* Specify precision and scale for ``DECIMAL`` if the dialect is ``mssql``, ``mysql`` or ``oracle``.
-* Set length of ``VARCHAR`` to ``1`` even if maximum length is ``0`` to satisfy MySQL.
-* Set type to ``TEXT`` if maximum length is greater than 21,844 to satisfy MySQL.
 * Add ``chunk_size`` option to :meth:`.Table.to_sql` to write rows in batches.
 * Add ``unique_constraint`` option to :meth:`.Table.to_sql` to include in a UNIQUE constraint.
+
+Dialect-specific:
+
+* Specify precision and scale for ``DECIMAL`` (MS SQL, MySQL, Oracle).
+* Set length of ``VARCHAR`` to ``1`` even if maximum length is ``0`` (MySQL).
+* Set type to ``TEXT`` if maximum length is greater than 21,844 (MySQL).
 
 0.5.2 - April 28, 2017
 ----------------------

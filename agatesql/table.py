@@ -179,7 +179,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
         sql_column_kwargs = {}
 
         if constraints:
-            if isinstance(column.data_type, agate.Text):
+            if isinstance(column.data_type, agate.Text) and dialect == 'mysql':
                 length = table.aggregate(agate.MaxLength(column_name))
                 if length > 21844:
                     # @see https://dev.mysql.com/doc/refman/5.7/en/string-type-overview.html
