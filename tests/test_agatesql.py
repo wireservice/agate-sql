@@ -154,13 +154,9 @@ class TestSQL(agate.AgateTestCase):
             self.table.to_sql_create_statement('test_table', dialect=dialect)
 
     def test_to_sql_create_statement_zero_width(self):
-        rows = (
-            (1, ''),
-            (2, ''),
-        )
+        rows = ((1, ''), (2, ''))
         column_names = ['id', 'name']
         column_types = [agate.Number(), agate.Text()]
-
         table = agate.Table(rows, column_names, column_types)
 
         statement = table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
@@ -168,6 +164,19 @@ class TestSQL(agate.AgateTestCase):
         self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_schema.test_table (
   id DECIMAL(38, 0) NOT NULL, 
   name VARCHAR(1)
+);''')  # noqa
+
+    def test_to_sql_create_statement_wide_width(self):
+        rows = ((1, 'x' * 21845), (2, ''))
+        column_names = ['id', 'name']
+        column_types = [agate.Number(), agate.Text()]
+        table = agate.Table(rows, column_names, column_types)
+
+        statement = table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
+
+        self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_schema.test_table (
+  id DECIMAL(38, 0) NOT NULL, 
+  name TEXT
 );''')  # noqa
 
     def test_sql_query_simple(self):

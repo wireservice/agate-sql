@@ -11,7 +11,7 @@ import six
 import agate
 from sqlalchemy import Column, MetaData, Table, UniqueConstraint, create_engine, dialects
 from sqlalchemy.engine import Connection
-from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, TIMESTAMP, VARCHAR, Interval
+from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, TEXT, TIMESTAMP, VARCHAR, Interval
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
 from sqlalchemy.dialects.postgresql import INTERVAL as POSTGRES_INTERVAL
 from sqlalchemy.schema import CreateTable
@@ -130,7 +130,7 @@ def from_sql_query(self, query):
     return table
 
 
-def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs=None):
+def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs=None, sql_column_type=None):
     """
     Creates a sqlalchemy column from agate column data.
 
@@ -142,13 +142,14 @@ def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs
         Additional kwargs to passed through to the type constructor, such as ``length``.
     :param sql_column_kwargs:
         Additional kwargs to passed through to the Column constructor, such as ``nullable``.
+    :param sql_column_type:
+        The type of the column (optional).
     """
-    sql_column_type = None
-
-    for agate_type, sql_type in SQL_TYPE_MAP.items():
-        if isinstance(column.data_type, agate_type):
-            sql_column_type = sql_type
-            break
+    if not sql_column_type:
+        for agate_type, sql_type in SQL_TYPE_MAP.items():
+            if isinstance(column.data_type, agate_type):
+                sql_column_type = sql_type
+                break
 
     if sql_column_type is None:
         raise ValueError('Unsupported column type: %s' % column.data_type)
@@ -173,13 +174,19 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
         SQL_TYPE_MAP[agate.TimeDelta] = Interval
 
     for column_name, column in table.columns.items():
+        sql_column_type = None
         sql_type_kwargs = {}
         sql_column_kwargs = {}
 
         if constraints:
             if isinstance(column.data_type, agate.Text):
-                # If length is zero, SQLAlchemy may raise "VARCHAR requires a length on dialect mysql".
-                sql_type_kwargs['length'] = table.aggregate(agate.MaxLength(column_name)) or 1
+                length = table.aggregate(agate.MaxLength(column_name))
+                if length > 21844:
+                    # @see https://dev.mysql.com/doc/refman/5.7/en/string-type-overview.html
+                    sql_column_type = TEXT
+                else:
+                    # If length is zero, SQLAlchemy may raise "VARCHAR requires a length on dialect mysql".
+                    sql_type_kwargs['length'] = length or 1
 
             # PostgreSQL and SQLite don't have scale default 0.
             # @see https://www.postgresql.org/docs/9.2/static/datatype-numeric.html
@@ -199,7 +206,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
             if not isinstance(column.data_type, agate.DateTime):
                 sql_column_kwargs['nullable'] = table.aggregate(agate.HasNulls(column_name))
 
-        sql_table.append_column(make_sql_column(column_name, column, sql_type_kwargs, sql_column_kwargs))
+        sql_table.append_column(make_sql_column(column_name, column, sql_type_kwargs, sql_column_kwargs, sql_column_type))
 
     if unique_constraint:
         sql_table.append_constraint(UniqueConstraint(*unique_constraint))
