@@ -32,7 +32,7 @@ INTERVAL_MAP = {
 }
 
 
-def get_connection(connection_or_string=None):
+def get_engine_and_connection(connection_or_string=None):
     """
     Gets a connection to a specific SQL alchemy backend. If an existing
     connection is provided, it will be passed through. If no connection
@@ -63,7 +63,7 @@ def from_sql(cls, connection_or_string, table_name):
     :param table_name:
         The name of a table in the referenced database.
     """
-    engine, connection = get_connection(connection_or_string)
+    engine, connection = get_engine_and_connection(connection_or_string)
 
     metadata = MetaData(connection)
     sql_table = Table(table_name, metadata, autoload=True, autoload_with=connection)
@@ -118,7 +118,7 @@ def from_sql_query(self, query):
     :param query:
         A SQL query to execute.
     """
-    _, connection = get_connection()
+    _, connection = get_engine_and_connection()
 
     # Must escape '%'.
     # @see https://github.com/wireservice/csvkit/issues/440
@@ -138,9 +138,10 @@ def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs
         The name of the column.
     :param column:
         The agate column.
+    :param sql_type_kwargs:
+        Additional kwargs to passed through to the type constructor, such as ``length``.
     :param sql_column_kwargs:
-        Additional kwargs to passed through to the Column constructor, such as
-        ``nullable``.
+        Additional kwargs to passed through to the Column constructor, such as ``nullable``.
     """
     sql_column_type = None
 
@@ -150,7 +151,7 @@ def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs
             break
 
     if sql_column_type is None:
-        raise ValueError('Unsupported column type: %s' % sql_column_type)
+        raise ValueError('Unsupported column type: %s' % column.data_type)
 
     sql_type_kwargs = sql_type_kwargs or {}
     sql_column_kwargs = sql_column_kwargs or {}
@@ -237,7 +238,7 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
     :param chunk_size
         Write rows in batches of this size. If not set, rows will be written at once.
     """
-    engine, connection = get_connection(connection_or_string)
+    engine, connection = get_engine_and_connection(connection_or_string)
 
     dialect = connection.engine.dialect.name
     sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
@@ -312,7 +313,7 @@ def sql_query(self, query, table_name='agate'):
     :param table_name:
         The name to use for the table in the queries, defaults to ``agate``.
     """
-    _, connection = get_connection()
+    _, connection = get_engine_and_connection()
 
     # Execute the specified SQL queries
     queries = query.split(';')
