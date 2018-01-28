@@ -2,10 +2,6 @@
     :target: https://travis-ci.org/wireservice/agate-sql
     :alt: Build status
 
-.. image:: https://img.shields.io/pypi/dw/agate-sql.svg
-    :target: https://pypi.python.org/pypi/agate-sql
-    :alt: PyPI downloads
-
 .. image:: https://img.shields.io/pypi/v/agate-sql.svg
     :target: https://pypi.python.org/pypi/agate-sql
     :alt: Version
