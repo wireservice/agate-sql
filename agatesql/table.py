@@ -9,7 +9,7 @@ import decimal
 import datetime
 import six
 import agate
-from sqlalchemy import Column, MetaData, Table, create_engine, dialects
+from sqlalchemy import Column, MetaData, Table, UniqueConstraint, create_engine, dialects
 from sqlalchemy.engine import Connection
 from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, TIMESTAMP, VARCHAR, Interval
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
@@ -158,7 +158,8 @@ def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs
     return Column(column_name, sql_column_type(**sql_type_kwargs), **sql_column_kwargs)
 
 
-def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=True, connection=None):
+def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=True, unique_constraint=[],
+                   connection=None):
     """
     Generates a SQL alchemy table from an agate table.
     """
@@ -199,12 +200,15 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
 
         sql_table.append_column(make_sql_column(column_name, column, sql_type_kwargs, sql_column_kwargs))
 
+    if unique_constraint:
+        sql_table.append_constraint(UniqueConstraint(*unique_constraint))
+
     return sql_table
 
 
 def to_sql(self, connection_or_string, table_name, overwrite=False,
            create=True, create_if_not_exists=False, insert=True, prefixes=[],
-           db_schema=None, constraints=True, chunksize=None):
+           db_schema=None, constraints=True, unique_constraint=[], chunk_size=None):
     """
     Write this table to the given SQL database.
 
@@ -228,14 +232,16 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
         Create table in the specified database schema.
     :param constraints
         Generate constraints such as ``nullable`` for table columns.
-    :param chunksize
-        If not None, rows will be written in batches of this size. If None, rows will be written at once.
+    :param unique_constraint
+        The names of the columns to include in a UNIQUE constraint.
+    :param chunk_size
+        Write rows in batches of this size. If not set, rows will be written at once.
     """
     engine, connection = get_connection(connection_or_string)
 
     dialect = connection.engine.dialect.name
     sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
-                               connection=connection)
+                               unique_constraint=unique_constraint, connection=connection)
 
     if create:
         if overwrite:
@@ -247,14 +253,16 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
         insert = sql_table.insert()
         for prefix in prefixes:
             insert = insert.prefix_with(prefix)
-        if chunksize is None:
+        if chunk_size is None:
             connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
         else:
-            rowlen = len(self.rows)
-            for idx in range((rowlen - 1) // chunksize + 1):
-                end_of_idx = rowlen if (idx + 1) * chunksize > rowlen else (idx + 1) * chunksize
+            number_of_rows = len(self.rows)
+            for index in range((number_of_rows - 1) // chunk_size + 1):
+                end_index = (index + 1) * chunk_size
+                if end_index > number_of_rows:
+                    end_index = number_of_rows
                 connection.execute(insert, [dict(zip(self.column_names, row)) for row in
-                                            self.rows[idx * chunksize:end_of_idx]])
+                                            self.rows[index * chunk_size:end_index]])
 
     try:
         return sql_table
@@ -264,7 +272,7 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
             engine.dispose()
 
 
-def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, constraints=True):
+def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, constraints=True, unique_constraint=[]):
     """
     Generates a CREATE TABLE statement for this SQL table, but does not execute
     it.
@@ -277,8 +285,11 @@ def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, cons
         Create table in the specified database schema.
     :param constraints
         Generate constraints such as ``nullable`` for table columns.
+    :param unique_constraint
+        The names of the columns to include in a UNIQUE constraint.
     """
-    sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints)
+    sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
+                               unique_constraint=unique_constraint)
 
     if dialect:
         sql_dialect = dialects.registry.load(dialect)()

@@ -72,32 +72,48 @@ class TestSQL(agate.AgateTestCase):
     def test_to_sql_create_statement(self):
         statement = self.table.to_sql_create_statement('test_table')
 
-        self.assertIn('CREATE TABLE test_table', statement)
-        self.assertIn('number DECIMAL,', statement)
-        self.assertIn('text VARCHAR(1) NOT NULL,', statement)
-        self.assertIn('boolean BOOLEAN,', statement)
-        self.assertIn('date DATE,', statement)
-        self.assertIn('datetime TIMESTAMP', statement)
+        self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_table (
+  number DECIMAL, 
+  text VARCHAR(1) NOT NULL, 
+  boolean BOOLEAN, 
+  date DATE, 
+  datetime TIMESTAMP
+);''')  # noqa
 
     def test_to_sql_create_statement_no_constraints(self):
         statement = self.table.to_sql_create_statement('test_table', constraints=False)
 
-        self.assertIn('CREATE TABLE test_table', statement)
-        self.assertIn('number DECIMAL,', statement)
-        self.assertIn('text VARCHAR,', statement)
-        self.assertIn('boolean BOOLEAN,', statement)
-        self.assertIn('date DATE,', statement)
-        self.assertIn('datetime TIMESTAMP', statement)
+        self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_table (
+  number DECIMAL, 
+  text VARCHAR, 
+  boolean BOOLEAN, 
+  date DATE, 
+  datetime TIMESTAMP
+);''')  # noqa
+
+    def test_to_sql_create_statement_unique_constraint(self):
+        statement = self.table.to_sql_create_statement('test_table', unique_constraint=['number', 'text'])
+
+        self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_table (
+  number DECIMAL, 
+  text VARCHAR(1) NOT NULL, 
+  boolean BOOLEAN, 
+  date DATE, 
+  datetime TIMESTAMP, 
+  UNIQUE (number, text)
+);''')  # noqa
 
     def test_to_sql_create_statement_with_schema(self):
         statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
 
-        self.assertIn('CREATE TABLE test_schema.test_table', statement)
-        self.assertIn('number DECIMAL(38, 3),', statement)
-        self.assertIn('text VARCHAR(1) NOT NULL,', statement)
-        self.assertIn('boolean BOOL,', statement)
-        self.assertIn('date DATE,', statement)
-        self.assertIn('datetime TIMESTAMP', statement)
+        self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_schema.test_table (
+  number DECIMAL(38, 3), 
+  text VARCHAR(1) NOT NULL, 
+  boolean BOOL, 
+  date DATE, 
+  datetime TIMESTAMP NULL, 
+  CHECK (boolean IN (0, 1))
+);''')  # noqa
 
     def test_to_sql_create_statement_with_dialects(self):
         for dialect in ['mysql', 'postgresql', 'sqlite']:
@@ -115,9 +131,10 @@ class TestSQL(agate.AgateTestCase):
 
         statement = table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
 
-        self.assertIn('CREATE TABLE test_schema.test_table', statement)
-        self.assertIn('id DECIMAL(38, 0) NOT NULL,', statement)
-        self.assertIn('name VARCHAR(1)', statement)
+        self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_schema.test_table (
+  id DECIMAL(38, 0) NOT NULL, 
+  name VARCHAR(1)
+);''')  # noqa
 
     def test_sql_query_simple(self):
         results = self.table.sql_query('select * from agate')
@@ -150,32 +167,27 @@ class TestSQL(agate.AgateTestCase):
         self.assertColumnTypes(results, [agate.Number])
         self.assertRows(results, [[Decimal('5.123')]])
 
-    def test_chunksize(self):
+    def test_chunk_size(self):
         column_names = ['number']
         column_types = [agate.Number()]
 
-        n = 9999
         rows = []
-        ref_total = 0
-        for k in range(n):
-            rows.append((k,))
-            ref_total += k
+        expected = 0
+        for n in range(9999):
+            rows.append((n,))
+            expected += n
 
         engine = create_engine(self.connection_string)
         connection = engine.connect()
 
         try:
-            for chunksize in [11, 100, 9, 231]:
-                # insert data with chunksize
-                table = agate.Table(rows, column_names, column_types)
-                table.to_sql(connection, 'test_chunksize', overwrite=True, chunksize=chunksize)
+            table = agate.Table(rows, column_names, column_types)
+            table.to_sql(connection, 'test_chunk_size', overwrite=True, chunk_size=100)
 
-                table = agate.Table.from_sql(connection, 'test_chunksize')
-                total = 0
-                for r in table.rows:
-                    total += int(r[0])
-                self.assertEqual(len(table.rows), len(rows), "Number of rows")
-                self.assertEqual(ref_total, total, "Sum of all values")
+            table = agate.Table.from_sql(connection, 'test_chunk_size')
+            actual = sum(r[0] for r in table.rows)
+            self.assertEqual(len(table.rows), len(rows))
+            self.assertEqual(expected, actual)
         finally:
             connection.close()
             engine.dispose()
