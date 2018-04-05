@@ -161,7 +161,7 @@ def make_sql_column(column_name, column, sql_type_kwargs=None, sql_column_kwargs
 
 
 def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=True, unique_constraint=[],
-                   connection=None):
+                   connection=None, col_len_multiplier=1, min_col_len=1):
     """
     Generates a SQL alchemy table from an agate table.
     """
@@ -180,13 +180,13 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
 
         if constraints:
             if isinstance(column.data_type, agate.Text) and dialect == 'mysql':
-                length = table.aggregate(agate.MaxLength(column_name))
+                length = table.aggregate(agate.MaxLength(column_name)) * decimal.Decimal(col_len_multiplier)
                 if length > 21844:
                     # @see https://dev.mysql.com/doc/refman/5.7/en/string-type-overview.html
                     sql_column_type = TEXT
                 else:
                     # If length is zero, SQLAlchemy may raise "VARCHAR requires a length on dialect mysql".
-                    sql_type_kwargs['length'] = length or 1
+                    sql_type_kwargs['length'] = length if length >= min_col_len else min_col_len
 
             # PostgreSQL and SQLite don't have scale default 0.
             # @see https://www.postgresql.org/docs/9.2/static/datatype-numeric.html
@@ -216,7 +216,8 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
 
 def to_sql(self, connection_or_string, table_name, overwrite=False,
            create=True, create_if_not_exists=False, insert=True, prefixes=[],
-           db_schema=None, constraints=True, unique_constraint=[], chunk_size=None):
+           db_schema=None, constraints=True, unique_constraint=[], chunk_size=None, 
+           col_len_multiplier=1, min_col_len=1):
     """
     Write this table to the given SQL database.
 
@@ -244,12 +245,17 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
         The names of the columns to include in a UNIQUE constraint.
     :param chunk_size
         Write rows in batches of this size. If not set, rows will be written at once.
+    :param col_len_multiplier
+        Multiply max column width by this multiplier to accomodate larger values in later runs.
+    :param col_min_len
+        Minimum size for text columns.
     """
     engine, connection = get_engine_and_connection(connection_or_string)
 
     dialect = connection.engine.dialect.name
     sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
-                               unique_constraint=unique_constraint, connection=connection)
+                               unique_constraint=unique_constraint, connection=connection, 
+                               col_len_multiplier=col_len_multiplier, min_col_len=min_col_len)
 
     if create:
         if overwrite:

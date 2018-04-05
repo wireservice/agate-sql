@@ -8,7 +8,6 @@ import agatesql  # noqa
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 
-
 class TestSQL(agate.AgateTestCase):
     def setUp(self):
         self.rows = (
@@ -178,6 +177,30 @@ class TestSQL(agate.AgateTestCase):
   id DECIMAL(38, 0) NOT NULL, 
   name TEXT
 );''')  # noqa
+
+    def test_make_sql_table_col_len_multiplier(self):
+        rows = ((1, 'x' * 10), (2, ''))
+        column_names = ['id', 'name']
+        column_types = [agate.Number(), agate.Text()]
+        table = agate.Table(rows, column_names, column_types)
+
+        sql_table = agatesql.table.make_sql_table(table, 'test_table', dialect='mysql', db_schema='test_schema',
+                                                  constraints=True, col_len_multiplier=1.5)
+
+
+        self.assertEquals(sql_table.columns.get('name').type.length, 15)
+
+    def test_make_sql_table_min_col_len(self):
+        rows = ((1, 'x' * 10), (2, ''))
+        column_names = ['id', 'name']
+        column_types = [agate.Number(), agate.Text()]
+        table = agate.Table(rows, column_names, column_types)
+
+        sql_table = agatesql.table.make_sql_table(table, 'test_table', dialect='mysql', db_schema='test_schema', 
+                                                  constraints=True, min_col_len=20)
+
+
+        self.assertEquals(sql_table.columns.get('name').type.length, 20)
 
     def test_sql_query_simple(self):
         results = self.table.sql_query('select * from agate')
