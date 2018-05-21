@@ -150,7 +150,7 @@ class TestSQL(agate.AgateTestCase):
 );''')  # noqa
 
     def test_to_sql_create_statement_with_dialects(self):
-        for dialect in ['mysql', 'postgresql', 'sqlite']:
+        for dialect in ['crate', 'mysql', 'postgresql', 'sqlite']:
             self.table.to_sql_create_statement('test_table', dialect=dialect)
 
     def test_to_sql_create_statement_zero_width(self):

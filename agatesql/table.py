@@ -11,7 +11,7 @@ import six
 import agate
 from sqlalchemy import Column, MetaData, Table, UniqueConstraint, create_engine, dialects
 from sqlalchemy.engine import Connection
-from sqlalchemy.types import BOOLEAN, DECIMAL, DATE, TEXT, TIMESTAMP, VARCHAR, Interval
+from sqlalchemy.types import BOOLEAN, DATE, DECIMAL, FLOAT, TEXT, TIMESTAMP, VARCHAR, Interval
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
 from sqlalchemy.dialects.postgresql import INTERVAL as POSTGRES_INTERVAL
 from sqlalchemy.schema import CreateTable
@@ -19,16 +19,21 @@ from sqlalchemy.sql import select
 
 SQL_TYPE_MAP = {
     agate.Boolean: BOOLEAN,
-    agate.Number: DECIMAL,
+    agate.Number: None,  # See below
     agate.Date: DATE,
     agate.DateTime: TIMESTAMP,
     agate.TimeDelta: None,  # See below
-    agate.Text: VARCHAR
+    agate.Text: VARCHAR,
+}
+
+NUMBER_MAP = {
+    'crate': FLOAT,
+    'sqlite': FLOAT,
 }
 
 INTERVAL_MAP = {
     'postgresql': POSTGRES_INTERVAL,
-    'oracle': ORACLE_INTERVAL
+    'oracle': ORACLE_INTERVAL,
 }
 
 
@@ -168,10 +173,8 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
     metadata = MetaData(connection)
     sql_table = Table(table_name, metadata, schema=db_schema)
 
-    if dialect in INTERVAL_MAP.keys():
-        SQL_TYPE_MAP[agate.TimeDelta] = INTERVAL_MAP[dialect]
-    else:
-        SQL_TYPE_MAP[agate.TimeDelta] = Interval
+    SQL_TYPE_MAP[agate.Number] = NUMBER_MAP.get(dialect, DECIMAL)
+    SQL_TYPE_MAP[agate.TimeDelta] = INTERVAL_MAP.get(dialect, Interval)
 
     for column_name, column in table.columns.items():
         sql_column_type = None

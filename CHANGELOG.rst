@@ -1,6 +1,11 @@
 0.5.4
 -----
 
+Dialect-specific:
+
+* Add support for CrateDB.
+* Eliminate SQLite warning about Decimal numbers.
+
 0.5.3 - January 28, 2018
 ------------------------
 
