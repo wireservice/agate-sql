@@ -4,6 +4,7 @@
 Dialect-specific:
 
 * Add support for CrateDB.
+* Set type to ``BIT`` for boolean (MS SQL).
 * Eliminate SQLite warning about Decimal numbers.
 
 0.5.3 - January 28, 2018
