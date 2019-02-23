@@ -1,6 +1,8 @@
 0.5.4
 -----
 
+* Add ``min_col_len`` and ``col_len_multiplier`` options to :meth:`.Table.to_sql` to control the length of text columns.
+
 Dialect-specific:
 
 * Add support for CrateDB.
