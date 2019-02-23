@@ -1,6 +1,8 @@
 0.5.4
 -----
 
+* agate-sql is now tested against Python 3.7.
+* Drop support for Python 3.3 (end-of-life was September 29, 2017).
 * Add ``min_col_len`` and ``col_len_multiplier`` options to :meth:`.Table.to_sql` to control the length of text columns.
 
 Dialect-specific:
