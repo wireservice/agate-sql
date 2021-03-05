@@ -3,9 +3,6 @@ language: python
 python:
   - "3.6"
   - "3.7"
-# command to install dependencies
-install:
-    - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then pip install -r requirements-py3.txt; else pip install -r requirements-py2.txt; fi
-# command to run tests
+install: pip install .[test]
 script: nosetests tests
 sudo: false

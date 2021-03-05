@@ -2,11 +2,6 @@
 
 from setuptools import setup
 
-install_requires = [
-    'agate>=1.5.0',
-    'sqlalchemy>=1.0.8'
-]
-
 setup(
     name='agate-sql',
     version='0.5.6',
@@ -36,5 +31,19 @@ setup(
     packages=[
         'agatesql'
     ],
-    install_requires=install_requires
+    install_requires=[
+        'agate>=1.5.0',
+        'sqlalchemy>=1.0.8'
+    ],
+    extras_require={
+        'test': [
+            'crate',
+            'nose>=1.1.2',
+            'geojson',
+        ],
+        'docs': [
+            'Sphinx>=1.2.2',
+            'sphinx_rtd_theme>=0.1.6',
+        ],
+    }
 )

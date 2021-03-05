@@ -18,7 +18,7 @@ class TestSQL(agate.AgateTestCase):
         )
 
         self.column_names = [
-            'number', 'text', 'boolean', 'date', 'datetime',
+            'number', 'textcol', 'boolean', 'date', 'datetime',
         ]
 
         self.column_types = [
@@ -107,7 +107,7 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_table (
   number DECIMAL, 
-  text VARCHAR NOT NULL, 
+  textcol VARCHAR NOT NULL, 
   boolean BOOLEAN, 
   date DATE, 
   datetime TIMESTAMP
@@ -118,22 +118,22 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_table (
   number DECIMAL, 
-  text VARCHAR, 
+  textcol VARCHAR, 
   boolean BOOLEAN, 
   date DATE, 
   datetime TIMESTAMP
 );''')  # noqa
 
     def test_to_sql_create_statement_unique_constraint(self):
-        statement = self.table.to_sql_create_statement('test_table', unique_constraint=['number', 'text'])
+        statement = self.table.to_sql_create_statement('test_table', unique_constraint=['number', 'textcol'])
 
         self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_table (
   number DECIMAL, 
-  text VARCHAR NOT NULL, 
+  textcol VARCHAR NOT NULL, 
   boolean BOOLEAN, 
   date DATE, 
   datetime TIMESTAMP, 
-  UNIQUE (number, text)
+  UNIQUE (number, textcol)
 );''')  # noqa
 
     def test_to_sql_create_statement_with_schema(self):
@@ -141,7 +141,7 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertEqual(statement.replace('\t', '  '), '''CREATE TABLE test_schema.test_table (
   number DECIMAL(38, 3), 
-  text VARCHAR(1) NOT NULL, 
+  textcol VARCHAR(1) NOT NULL, 
   boolean BOOL, 
   date DATE, 
   datetime TIMESTAMP NULL, 
@@ -188,7 +188,7 @@ class TestSQL(agate.AgateTestCase):
                                                   constraints=True, col_len_multiplier=1.5)
 
 
-        self.assertEquals(sql_table.columns.get('name').type.length, 15)
+        self.assertEqual(sql_table.columns.get('name').type.length, 15)
 
     def test_make_sql_table_min_col_len(self):
         rows = ((1, 'x' * 10), (2, ''))
@@ -200,7 +200,7 @@ class TestSQL(agate.AgateTestCase):
                                                   constraints=True, min_col_len=20)
 
 
-        self.assertEquals(sql_table.columns.get('name').type.length, 20)
+        self.assertEqual(sql_table.columns.get('name').type.length, 20)
 
     def test_sql_query_simple(self):
         results = self.table.sql_query('select * from agate')
