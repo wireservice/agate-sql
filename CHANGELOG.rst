@@ -1,5 +1,7 @@
-0.5.6
------
+0.5.6 - March 4, 2021
+---------------------
+
+* Fix test that fails in specific environments.
 
 0.5.5 - July 7, 2020
 --------------------
