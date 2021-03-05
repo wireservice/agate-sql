@@ -1,5 +1,4 @@
-.. image:: https://travis-ci.org/wireservice/agate-sql.png
-    :target: https://travis-ci.org/wireservice/agate-sql
+.. image:: https://github.com/wireservice/agate-sql/workflows/CI/badge.svg
     :alt: Build status
 
 .. image:: https://img.shields.io/pypi/v/agate-sql.svg
