@@ -25,9 +25,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
-        'Topic :: Multimedia :: Graphics',
         'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: Scientific/Engineering :: Visualization',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     packages=[
@@ -35,7 +33,7 @@ setup(
     ],
     install_requires=[
         'agate>=1.5.0',
-        'sqlalchemy>=1.0.8'
+        'sqlalchemy>=1.0.8',
     ],
     extras_require={
         'test': [
