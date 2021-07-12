@@ -144,8 +144,7 @@ class TestSQL(agate.AgateTestCase):
   textcol VARCHAR(1) NOT NULL, 
   boolean BOOL, 
   date DATE, 
-  datetime TIMESTAMP NULL, 
-  CHECK (boolean IN (0, 1))
+  datetime TIMESTAMP NULL
 );''')  # noqa
 
     def test_to_sql_create_statement_with_dialects(self):
