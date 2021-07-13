@@ -5,18 +5,19 @@ This module contains the agatesql extensions to
 :class:`Table <agate.table.Table>`.
 """
 
-import decimal
 import datetime
-import six
+import decimal
+
 import agate
+import six
 from sqlalchemy import Column, MetaData, Table, UniqueConstraint, create_engine, dialects
-from sqlalchemy.engine import Connection
-from sqlalchemy.types import BOOLEAN, DATE, DATETIME, DECIMAL, FLOAT, TEXT, TIMESTAMP, VARCHAR, Interval
 from sqlalchemy.dialects.mssql import BIT
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
 from sqlalchemy.dialects.postgresql import INTERVAL as POSTGRES_INTERVAL
+from sqlalchemy.engine import Connection
 from sqlalchemy.schema import CreateTable
 from sqlalchemy.sql import select
+from sqlalchemy.types import BOOLEAN, DATE, DATETIME, DECIMAL, FLOAT, TEXT, TIMESTAMP, VARCHAR, Interval
 
 SQL_TYPE_MAP = {
     agate.Boolean: None,  # See below
@@ -220,7 +221,8 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
             if not isinstance(column.data_type, agate.DateTime):
                 sql_column_kwargs['nullable'] = table.aggregate(agate.HasNulls(column_name))
 
-        sql_table.append_column(make_sql_column(column_name, column, sql_type_kwargs, sql_column_kwargs, sql_column_type))
+        sql_table.append_column(make_sql_column(column_name, column,
+                                sql_type_kwargs, sql_column_kwargs, sql_column_type))
 
     if unique_constraint:
         sql_table.append_constraint(UniqueConstraint(*unique_constraint))
@@ -230,7 +232,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
 
 def to_sql(self, connection_or_string, table_name, overwrite=False,
            create=True, create_if_not_exists=False, insert=True, prefixes=[],
-           db_schema=None, constraints=True, unique_constraint=[], chunk_size=None, 
+           db_schema=None, constraints=True, unique_constraint=[], chunk_size=None,
            min_col_len=1, col_len_multiplier=1):
     """
     Write this table to the given SQL database.
@@ -268,7 +270,7 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
 
     dialect = connection.engine.dialect.name
     sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
-                               unique_constraint=unique_constraint, connection=connection, 
+                               unique_constraint=unique_constraint, connection=connection,
                                min_col_len=min_col_len, col_len_multiplier=col_len_multiplier)
 
     if create:

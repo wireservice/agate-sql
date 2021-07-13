@@ -21,5 +21,9 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      - run: pip install --upgrade check-manifest flake8 isort setuptools
+      - run: check-manifest
+      - run: flake8 .
+      - run: isort . --check-only
       - run: pip install .[test]
       - run: nosetests

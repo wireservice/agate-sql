@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import agate
+
 import agatesql
 
 table = agate.Table.from_sql('sqlite:///example.db', 'test')

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 #
-# flake8: noqa
-#
 # This file is execfile()d with the current directory set to its containing dir.
 #
 # Note that not all possible configuration values are present in this
@@ -191,8 +189,8 @@ htmlhelp_basename = 'agatesqldoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'agate-sql.tex', u'agate-sql Documentation',
-   u'Christopher Groskopf', 'manual'),
+    ('index', 'agate-sql.tex', u'agate-sql Documentation',
+     u'Christopher Groskopf', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
