@@ -115,8 +115,7 @@ class TestSQL(agate.AgateTestCase):
               boolean BOOLEAN, 
               date DATE, 
               datetime TIMESTAMP
-            );'''
-        ))  # noqa: W291
+            );'''))  # noqa: W291
 
     def test_to_sql_create_statement_no_constraints(self):
         statement = self.table.to_sql_create_statement('test_table', constraints=False)
@@ -128,8 +127,7 @@ class TestSQL(agate.AgateTestCase):
               boolean BOOLEAN, 
               date DATE, 
               datetime TIMESTAMP
-            );'''
-        ))  # noqa: W291
+            );'''))  # noqa: W291
 
     def test_to_sql_create_statement_unique_constraint(self):
         statement = self.table.to_sql_create_statement('test_table', unique_constraint=['number', 'textcol'])
@@ -142,8 +140,7 @@ class TestSQL(agate.AgateTestCase):
               date DATE, 
               datetime TIMESTAMP, 
               UNIQUE (number, textcol)
-            );'''
-        ))  # noqa: W291
+            );'''))  # noqa: W291
 
     def test_to_sql_create_statement_with_schema(self):
         statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
@@ -155,8 +152,7 @@ class TestSQL(agate.AgateTestCase):
               boolean BOOL, 
               date DATE, 
               datetime TIMESTAMP NULL
-            );'''
-        ))  # noqa: W291
+            );'''))  # noqa: W291
 
     def test_to_sql_create_statement_with_dialects(self):
         for dialect in ['crate', 'mssql', 'mysql', 'postgresql', 'sqlite']:
@@ -174,8 +170,7 @@ class TestSQL(agate.AgateTestCase):
             CREATE TABLE test_schema.test_table (
               id DECIMAL(38, 0) NOT NULL, 
               name VARCHAR(1)
-            );'''
-        ))  # noqa: W291
+            );'''))  # noqa: W291
 
     def test_to_sql_create_statement_wide_width(self):
         rows = ((1, 'x' * 21845), (2, ''))
@@ -189,8 +184,7 @@ class TestSQL(agate.AgateTestCase):
             CREATE TABLE test_schema.test_table (
               id DECIMAL(38, 0) NOT NULL, 
               name TEXT
-            );'''
-        ))  # noqa: W291
+            );'''))  # noqa: W291
 
     def test_make_sql_table_col_len_multiplier(self):
         rows = ((1, 'x' * 10), (2, ''))
