@@ -1,12 +1,14 @@
-#!/usr/bin/env python
+from setuptools import find_packages, setup
 
-from setuptools import setup
+with open('README.rst') as f:
+    long_description = f.read()
 
 setup(
     name='agate-sql',
     version='0.5.6',
     description='agate-sql adds SQL read/write support to agate.',
-    long_description=open('README.rst').read(),
+    long_description=long_description,
+    long_description_content_type='text/x-rst',
     author='Christopher Groskopf',
     author_email='chrisgroskopf@gmail.com',
     url='http://agate-sql.readthedocs.org/',
@@ -28,9 +30,7 @@ setup(
         'Topic :: Scientific/Engineering :: Information Analysis',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    packages=[
-        'agatesql'
-    ],
+    packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=[
         'agate>=1.5.0',
         'sqlalchemy>=1.0.8',
