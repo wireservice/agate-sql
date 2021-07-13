@@ -1,5 +1,10 @@
 .. image:: https://github.com/wireservice/agate-sql/workflows/CI/badge.svg
+    :target: https://github.com/wireservice/agate-sql/actions
     :alt: Build status
+
+.. image:: https://img.shields.io/pypi/dm/agate-sql.svg
+    :target: https://pypi.python.org/pypi/agate-sql
+    :alt: PyPI downloads
 
 .. image:: https://img.shields.io/pypi/v/agate-sql.svg
     :target: https://pypi.python.org/pypi/agate-sql
