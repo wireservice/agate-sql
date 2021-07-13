@@ -8,7 +8,7 @@ import agate
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 
-import agatesql  # noqa: E401
+import agatesql
 
 
 class TestSQL(agate.AgateTestCase):
