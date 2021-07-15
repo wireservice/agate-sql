@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-import platform
 from decimal import Decimal
 from textwrap import dedent
 
 import agate
-import six
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 
@@ -147,20 +145,14 @@ class TestSQL(agate.AgateTestCase):
     def test_to_sql_create_statement_with_schema(self):
         statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
 
-        # I don't know if this is the correct behavior.
-        if six.PY2 and platform.system() != 'Linux':
-            length = 2
-        else:
-            length = 1
-
         self.assertEqual(statement.replace('\t', '  '), dedent('''\
             CREATE TABLE test_schema.test_table (
               number DECIMAL(38, 3), 
-              textcol VARCHAR(%d) NOT NULL, 
+              textcol VARCHAR(1) NOT NULL, 
               boolean BOOL, 
               date DATE, 
               datetime TIMESTAMP NULL
-            );''' % length))  # noqa: W291
+            );'''))  # noqa: W291
 
     def test_to_sql_create_statement_with_dialects(self):
         for dialect in ['crate', 'mssql', 'mysql', 'postgresql', 'sqlite']:
