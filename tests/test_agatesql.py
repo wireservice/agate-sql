@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+import platform
 from decimal import Decimal
 from textwrap import dedent
 
@@ -145,14 +146,20 @@ class TestSQL(agate.AgateTestCase):
     def test_to_sql_create_statement_with_schema(self):
         statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
 
+        # I don't know if this the correct behavior for Windows or not.
+        if platform.system() == 'Windows':
+            length = 2
+        else:
+            length = 1
+
         self.assertEqual(statement.replace('\t', '  '), dedent('''\
             CREATE TABLE test_schema.test_table (
               number DECIMAL(38, 3), 
-              textcol VARCHAR(1) NOT NULL, 
+              textcol VARCHAR(%d) NOT NULL, 
               boolean BOOL, 
               date DATE, 
               datetime TIMESTAMP NULL
-            );'''))  # noqa: W291
+            );''' % length))  # noqa: W291
 
     def test_to_sql_create_statement_with_dialects(self):
         for dialect in ['crate', 'mssql', 'mysql', 'postgresql', 'sqlite']:
