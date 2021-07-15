@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+import platform
 from decimal import Decimal
 from textwrap import dedent
 
@@ -147,7 +148,7 @@ class TestSQL(agate.AgateTestCase):
         statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
 
         # I don't know if this is the correct behavior.
-        if six.PY2:
+        if six.PY2 and platform.system() != 'Linux':
             length = 2
         else:
             length = 1
