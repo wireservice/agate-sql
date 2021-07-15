@@ -159,7 +159,7 @@ class TestSQL(agate.AgateTestCase):
               boolean BOOL, 
               date DATE, 
               datetime TIMESTAMP NULL
-            );''' % length))  # noqa: W291
+            );''' % length), platform.system())  # noqa: W291
 
     def test_to_sql_create_statement_with_dialects(self):
         for dialect in ['crate', 'mssql', 'mysql', 'postgresql', 'sqlite']:
