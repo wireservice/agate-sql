@@ -145,14 +145,28 @@ class TestSQL(agate.AgateTestCase):
     def test_to_sql_create_statement_with_schema(self):
         statement = self.table.to_sql_create_statement('test_table', db_schema='test_schema', dialect='mysql')
 
-        self.assertEqual(statement.replace('\t', '  '), dedent('''\
-            CREATE TABLE test_schema.test_table (
-              number DECIMAL(38, 3), 
-              textcol VARCHAR(1) NOT NULL, 
-              boolean BOOL, 
-              date DATE, 
-              datetime TIMESTAMP NULL
-            );'''))  # noqa: W291
+        # https://github.com/wireservice/agate-sql/issues/33#issuecomment-879267838
+        if 'CHECK' in statement:
+            expected = '''\
+                CREATE TABLE test_schema.test_table (
+                  number DECIMAL(38, 3), 
+                  textcol VARCHAR(1) NOT NULL, 
+                  boolean BOOL, 
+                  date DATE, 
+                  datetime TIMESTAMP NULL, 
+                  CHECK (boolean IN (0, 1))
+                );'''  # noqa: W291
+        else:
+            expected = '''\
+                CREATE TABLE test_schema.test_table (
+                  number DECIMAL(38, 3), 
+                  textcol VARCHAR(1) NOT NULL, 
+                  boolean BOOL, 
+                  date DATE, 
+                  datetime TIMESTAMP NULL
+                );'''  # noqa: W291
+
+        self.assertEqual(statement.replace('\t', '  '), dedent(expected))
 
     def test_to_sql_create_statement_with_dialects(self):
         for dialect in ['crate', 'mssql', 'mysql', 'postgresql', 'sqlite']:
