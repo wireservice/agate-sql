@@ -194,19 +194,26 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
         sql_column_kwargs = {}
 
         if constraints:
-            if isinstance(column.data_type, agate.Text) and dialect == 'mysql':
+            if isinstance(column.data_type, agate.Text) and dialect in ('ingres', 'mysql'):
                 length = table.aggregate(agate.MaxLength(column_name)) * decimal.Decimal(col_len_multiplier)
                 if length > 21844:
                     # @see https://dev.mysql.com/doc/refman/5.7/en/string-type-overview.html
                     sql_column_type = TEXT
+                elif dialect == 'ingres' and length > 16000:
+                    # @see https://docs.actian.com/actianx/11.2/index.html#page/SQLRef%2FCharacter_Data_Types.htm%23
+                    # Could be longer but ~16K is a reasonable cut off to switch to CLOB
+                    sql_column_type = TEXT
                 else:
                     # If length is zero, SQLAlchemy may raise "VARCHAR requires a length on dialect mysql".
+                    # For Ingres, default length is 1
                     sql_type_kwargs['length'] = length if length >= min_col_len else min_col_len
 
             # PostgreSQL and SQLite don't have scale default 0.
             # @see https://www.postgresql.org/docs/9.2/static/datatype-numeric.html
             # @see https://www.sqlite.org/datatype3.html
-            if isinstance(column.data_type, agate.Number) and dialect in ('mssql', 'mysql', 'oracle'):
+            if isinstance(column.data_type, agate.Number) and dialect in ('ingres', 'mssql', 'mysql', 'oracle'):
+                # Ingres/Vector/Avalanche has precision range 1-39 and default 5, scale default 0.
+                # @see https://docs.actian.com/actianx/11.2/SQLRef/Numeric_Data_Types.htm#ww109458
                 # MySQL has precision range 1-65 and default 10, scale default 0.
                 # @see https://dev.mysql.com/doc/refman/5.7/en/fixed-point-types.html
                 # Oracle has precision range 1-38 and default 38, scale default 0.
