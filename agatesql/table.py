@@ -56,7 +56,7 @@ def get_engine_and_connection(connection_or_string=None):
         engine = create_engine('sqlite:///:memory:')
         connection = engine.connect()
         return None, connection
-    elif isinstance(connection_or_string, Connection):
+    if isinstance(connection_or_string, Connection):
         connection = connection_or_string
         return None, connection
 
