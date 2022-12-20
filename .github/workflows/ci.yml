@@ -26,4 +26,4 @@ jobs:
       - run: flake8 .
       - run: isort . --check-only
       - run: pip install .[test]
-      - run: nosetests
+      - run: pytest --cov agatesql
