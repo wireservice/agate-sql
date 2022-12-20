@@ -9,7 +9,6 @@ import datetime
 import decimal
 
 import agate
-import six
 from sqlalchemy import Column, MetaData, Table, UniqueConstraint, create_engine, dialects
 from sqlalchemy.dialects.mssql import BIT
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
@@ -100,7 +99,7 @@ def from_sql(cls, connection_or_string, table_name):
             column_types.append(agate.Number())
         elif py_type is bool:
             column_types.append(agate.Boolean())
-        elif issubclass(py_type, six.string_types):
+        elif issubclass(py_type, str):
             column_types.append(agate.Text())
         elif py_type is datetime.date:
             column_types.append(agate.Date())
@@ -326,7 +325,7 @@ def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, cons
     else:
         sql_dialect = None
 
-    return six.text_type(CreateTable(sql_table).compile(dialect=sql_dialect)).strip() + ';'
+    return str(CreateTable(sql_table).compile(dialect=sql_dialect)).strip() + ';'
 
 
 def sql_query(self, query, table_name='agate'):
