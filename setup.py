@@ -38,8 +38,9 @@ setup(
     extras_require={
         'test': [
             'crate',
-            'nose>=1.1.2',
             'geojson',
+            'pytest',
+            'pytest-cov',
         ],
         'docs': [
             'Sphinx>=1.2.2',
