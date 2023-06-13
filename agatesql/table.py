@@ -254,15 +254,15 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
         Add prefixes to the insert query.
     :param db_schema:
         Create table in the specified database schema.
-    :param constraints
+    :param constraints:
         Generate constraints such as ``nullable`` for table columns.
-    :param unique_constraint
+    :param unique_constraint:
         The names of the columns to include in a UNIQUE constraint.
-    :param chunk_size
+    :param chunk_size:
         Write rows in batches of this size. If not set, rows will be written at once.
-    :param col_min_len
+    :param col_min_len:
         The minimum length of text columns.
-    :param col_len_multiplier
+    :param col_len_multiplier:
         Multiply the maximum column length by this multiplier to accomodate larger values in later runs.
     """
     engine, connection = get_engine_and_connection(connection_or_string)
@@ -312,9 +312,9 @@ def to_sql_create_statement(self, table_name, dialect=None, db_schema=None, cons
         The dialect of SQL to use for the table statement.
     :param db_schema:
         Create table in the specified database schema.
-    :param constraints
+    :param constraints:
         Generate constraints such as ``nullable`` for table columns.
-    :param unique_constraint
+    :param unique_constraint:
         The names of the columns to include in a UNIQUE constraint.
     """
     sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
