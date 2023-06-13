@@ -13,11 +13,11 @@ To install:
 
     pip install agate-sql
 
-For details on development or supported platforms see the `agate documentation <http://agate.readthedocs.org>`_.
+For details on development or supported platforms see the `agate documentation <https://agate.readthedocs.org>`_.
 
 .. warning::
 
-    You'll need to have the correct `sqlalchemy drivers <http://docs.sqlalchemy.org/en/rel_1_0/dialects/index.html>`_ installed for whatever database you plan to access. For instance, in order to read/write tables in a Postgres database, you'll also need to ``pip install psycopg2``.
+    You'll need to have the correct `sqlalchemy drivers <https://docs.sqlalchemy.org/en/rel_1_0/dialects/index.html>`_ installed for whatever database you plan to access. For instance, in order to read/write tables in a Postgres database, you'll also need to ``pip install psycopg2``.
 
 Usage
 =====
@@ -41,7 +41,7 @@ To save this table back to the database:
 
     new_table.to_sql('postgresql:///hospitals', 'doctors')
 
-The first argument to either function can be any valid `sqlalchemy connection string <http://docs.sqlalchemy.org/en/rel_1_0/core/engines.html>`_. The second argument must be a database name. (Arbitrary SQL queries are not supported.)
+The first argument to either function can be any valid `sqlalchemy connection string <https://docs.sqlalchemy.org/en/rel_1_0/core/engines.html>`_. The second argument must be a database name. (Arbitrary SQL queries are not supported.)
 
 That's all there is to it.
 

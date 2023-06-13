@@ -216,7 +216,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
                 sql_type_kwargs['scale'] = table.aggregate(agate.MaxPrecision(column_name))
 
             # Avoid errors due to NO_ZERO_DATE.
-            # @see http://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
+            # @see https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
             if not isinstance(column.data_type, agate.DateTime):
                 sql_column_kwargs['nullable'] = table.aggregate(agate.HasNulls(column_name))
 
