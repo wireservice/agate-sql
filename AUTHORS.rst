@@ -9,3 +9,4 @@ The following individuals have contributed code to agate-sql:
 * `Jake Zimmerman <https://github.com/jez>`_
 * `Shige Takeda <https://github.com/smtakeda>`_
 * `Roger Webb <https://github.com/RogerWebb>`_
+* `Steve Kowalik <https://github.com/s-t-e-v-e-n-k>`_
