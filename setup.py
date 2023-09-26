@@ -34,7 +34,7 @@ setup(
     packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=[
         'agate>=1.5.0',
-        'sqlalchemy<2',
+        'sqlalchemy>=1.4',
     ],
     extras_require={
         'test': [
