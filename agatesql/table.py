@@ -79,8 +79,8 @@ def from_sql(cls, connection_or_string, table_name):
     """
     engine, connection = get_engine_and_connection(connection_or_string)
 
-    metadata = MetaData(connection)
-    sql_table = Table(table_name, metadata, autoload=True, autoload_with=connection)
+    metadata = MetaData()
+    sql_table = Table(table_name, metadata, autoload_with=connection)
 
     column_names = []
     column_types = []
@@ -110,7 +110,7 @@ def from_sql(cls, connection_or_string, table_name):
         else:
             raise ValueError('Unsupported sqlalchemy column type: %s' % type(sql_column.type))
 
-    s = select([sql_table])
+    s = select(sql_table)
 
     rows = connection.execute(s)
 
@@ -179,7 +179,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
     """
     Generates a SQL alchemy table from an agate table.
     """
-    metadata = MetaData(connection)
+    metadata = MetaData()
     sql_table = Table(table_name, metadata, schema=db_schema)
 
     SQL_TYPE_MAP[agate.Boolean] = BOOLEAN_MAP.get(dialect, BOOLEAN)
@@ -273,25 +273,27 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
                                min_col_len=min_col_len, col_len_multiplier=col_len_multiplier)
 
     if create:
-        if overwrite:
-            sql_table.drop(checkfirst=True)
+        with connection.begin():
+            if overwrite:
+                sql_table.drop(bind=connection, checkfirst=True)
 
-        sql_table.create(checkfirst=create_if_not_exists)
+            sql_table.create(bind=connection, checkfirst=create_if_not_exists)
 
     if insert:
-        insert = sql_table.insert()
-        for prefix in prefixes:
-            insert = insert.prefix_with(prefix)
-        if chunk_size is None:
-            connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
-        else:
-            number_of_rows = len(self.rows)
-            for index in range((number_of_rows - 1) // chunk_size + 1):
-                end_index = (index + 1) * chunk_size
-                if end_index > number_of_rows:
-                    end_index = number_of_rows
-                connection.execute(insert, [dict(zip(self.column_names, row)) for row in
-                                            self.rows[index * chunk_size:end_index]])
+        with connection.begin():
+            insert = sql_table.insert()
+            for prefix in prefixes:
+                insert = insert.prefix_with(prefix)
+            if chunk_size is None:
+                connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+            else:
+                number_of_rows = len(self.rows)
+                for index in range((number_of_rows - 1) // chunk_size + 1):
+                    end_index = (index + 1) * chunk_size
+                    if end_index > number_of_rows:
+                        end_index = number_of_rows
+                    connection.execute(insert, [dict(zip(self.column_names, row)) for row in
+                                                self.rows[index * chunk_size:end_index]])
 
     try:
         return sql_table
@@ -351,7 +353,7 @@ def sql_query(self, query, table_name='agate'):
 
     for q in queries:
         if q:
-            rows = connection.execute(q)
+            rows = connection.exec_driver_sql(q)
 
     table = agate.Table(list(rows), column_names=rows._metadata.keys)
 
