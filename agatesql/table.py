@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 This module contains the agatesql extensions to
 :class:`Table <agate.table.Table>`.
