@@ -2,6 +2,10 @@
     :target: https://github.com/wireservice/agate-sql/actions
     :alt: Build status
 
+.. image:: https://coveralls.io/repos/wireservice/agate-sql/badge.svg?branch=master
+    :target: https://coveralls.io/r/wireservice/agate-sql
+    :alt: Coverage status
+
 .. image:: https://img.shields.io/pypi/dm/agate-sql.svg
     :target: https://pypi.python.org/pypi/agate-sql
     :alt: PyPI downloads
