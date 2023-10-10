@@ -1,3 +1,9 @@
+Unreleased
+----------
+
+* Add Python 3.12 support.
+* Drop support for Python 3.6 (2021-12-23), 3.7 (2023-06-27).
+
 0.6.0 - Sep 26, 2023
 --------------------
 
