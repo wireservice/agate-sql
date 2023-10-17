@@ -5,6 +5,7 @@ This module contains the agatesql extensions to
 
 import datetime
 import decimal
+from urllib.parse import urlsplit
 
 import agate
 from sqlalchemy import Column, MetaData, Table, UniqueConstraint, create_engine, dialects
@@ -58,7 +59,11 @@ def get_engine_and_connection(connection_or_string=None):
         connection = connection_or_string
         return None, connection
 
-    engine = create_engine(connection_or_string)
+    kwargs = {}
+    if urlsplit(connection_or_string).scheme == 'mssql+pyodbc':
+        kwargs = {'fast_executemany': True}
+
+    engine = create_engine(connection_or_string, **kwargs)
     connection = engine.connect()
     return engine, connection
 
