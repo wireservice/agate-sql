@@ -1,5 +1,5 @@
-Unreleased
-----------
+0.7.0 - Oct 18, 2023
+--------------------
 
 * feat: Use `Fast Executemany Mode <https://docs.sqlalchemy.org/en/20/dialects/mssql.html#fast-executemany-mode>`_ when using the PyODBC SQL Server dialect.
 * Add Python 3.12 support.

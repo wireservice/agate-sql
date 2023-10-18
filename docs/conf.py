@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 project = 'agate-sql'
 copyright = '2017, Christopher Groskopf'
-version = '0.6.0'
+version = '0.7.0'
 release = version
 
 # -- General configuration ---------------------------------------------------
