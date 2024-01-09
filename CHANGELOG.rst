@@ -1,6 +1,7 @@
 0.7.1 - Jan 9, 2024
 --------------------
 
+* feat: Add experimental support for Ingres.
 * fix: Restore internal use of transactions instead of savepoints, because not all database engines support savepoints.
 
 0.7.0 - Oct 18, 2023

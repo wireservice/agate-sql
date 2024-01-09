@@ -196,21 +196,27 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
         sql_column_kwargs = {}
 
         if constraints:
-            if isinstance(column.data_type, agate.Text) and dialect == 'mysql':
+            if isinstance(column.data_type, agate.Text) and dialect in ('ingres', 'mysql'):
                 length = table.aggregate(agate.MaxLength(column_name)) * decimal.Decimal(col_len_multiplier)
-                if length > 21844:
-                    # @see https://dev.mysql.com/doc/refman/5.7/en/string-type-overview.html
+                if (
+                    # https://dev.mysql.com/doc/refman/8.2/en/string-type-syntax.html
+                    dialect == 'mysql' and length > 21844  # 65,535 bytes divided by 3
+                    # https://docs.actian.com/ingres/11.2/index.html#page/SQLRef/Character_Data_Types.htm
+                    or dialect == 'ingres' and length > 10666  # 32,000 bytes divided by 3
+                ):
                     sql_column_type = TEXT
+                # If length is zero, SQLAlchemy may raise "VARCHAR requires a length on dialect mysql".
                 else:
-                    # If length is zero, SQLAlchemy may raise "VARCHAR requires a length on dialect mysql".
                     sql_type_kwargs['length'] = length if length >= min_col_len else min_col_len
 
             # PostgreSQL and SQLite don't have scale default 0.
             # @see https://www.postgresql.org/docs/9.2/static/datatype-numeric.html
             # @see https://www.sqlite.org/datatype3.html
-            if isinstance(column.data_type, agate.Number) and dialect in ('mssql', 'mysql', 'oracle'):
+            if isinstance(column.data_type, agate.Number) and dialect in ('ingres', 'mssql', 'mysql', 'oracle'):
+                # Ingres has precision range 1-39 and default 5, scale default 0.
+                # @see https://docs.actian.com/ingres/11.2/index.html#page/SQLRef/Storage_Formats_of_Data_Types.htm
                 # MySQL has precision range 1-65 and default 10, scale default 0.
-                # @see https://dev.mysql.com/doc/refman/5.7/en/fixed-point-types.html
+                # @see https://dev.mysql.com/doc/refman/8.2/en/fixed-point-types.html
                 # Oracle has precision range 1-38 and default 38, scale default 0.
                 # @see https://docs.oracle.com/cd/B28359_01/server.111/b28318/datatype.htm#CNCPT1832
                 # SQL Server has range 1-38 and default 18, scale default 0.
@@ -219,7 +225,7 @@ def make_sql_table(table, table_name, dialect=None, db_schema=None, constraints=
                 sql_type_kwargs['scale'] = table.aggregate(agate.MaxPrecision(column_name))
 
             # Avoid errors due to NO_ZERO_DATE.
-            # @see https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
+            # @see https://dev.mysql.com/doc/refman/8.2/en/sql-mode.html#sqlmode_no_zero_date
             if not isinstance(column.data_type, agate.DateTime):
                 sql_column_kwargs['nullable'] = table.aggregate(agate.HasNulls(column_name))
 
@@ -276,14 +282,14 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
                                min_col_len=min_col_len, col_len_multiplier=col_len_multiplier)
 
     if create:
-        with connection.begin() as conn:
+        with connection.begin():
             if overwrite:
                 sql_table.drop(bind=connection, checkfirst=True)
 
             sql_table.create(bind=connection, checkfirst=create_if_not_exists)
 
     if insert:
-        with connection.begin() as conn:
+        with connection.begin():
             insert = sql_table.insert()
             for prefix in prefixes:
                 insert = insert.prefix_with(prefix)
