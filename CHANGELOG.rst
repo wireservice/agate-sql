@@ -95,7 +95,7 @@ Dialect-specific:
 0.4.0 - December 19, 2016
 -------------------------
 
-* Modified ``example.py`` so it no longer depends on Postgres.
+* Modified ``example.py`` so it no longer depends on PostgreSQL.
 * It is no longer necessary to run :code:`agatesql.patch()` after importing agatesql.
 * Upgrade required agate to ``1.5.0``.
 

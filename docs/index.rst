@@ -17,7 +17,9 @@ For details on development or supported platforms see the `agate documentation <
 
 .. warning::
 
-    You'll need to have the correct `sqlalchemy drivers <https://docs.sqlalchemy.org/en/rel_1_0/dialects/index.html>`_ installed for whatever database you plan to access. For instance, in order to read/write tables in a Postgres database, you'll also need to ``pip install psycopg2``.
+    You'll need to have the correct `SQLAlchemy drivers <https://docs.sqlalchemy.org/en/20/dialects/index.html>`_ installed for whatever database you plan to access. For instance, in order to read/write tables in a PostgreSQL database, you'll also need to ``pip install psycopg2``.
+
+    agate-sql supports all `included dialects <https://docs.sqlalchemy.org/en/20/dialects/index.html#included-dialects>`__. It is known to work with these `external dialects <https://docs.sqlalchemy.org/en/20/dialects/index.html#external-dialects>`__: CrateDB, Ingres.
 
 Usage
 =====
@@ -29,7 +31,7 @@ agate-sql uses a monkey patching pattern to add SQL support to all :class:`agate
     import agate
     import agatesql
 
-Importing :mod:`.agatesql` attaches new methods to :class:`agate.Table <agate.table.Table>`. For example, to import a table named :code:`doctors` from a local postgresql database named :code:`hospitals` you will use :meth:`.from_sql`:
+Importing :mod:`.agatesql` attaches new methods to :class:`agate.Table <agate.table.Table>`. For example, to import a table named :code:`doctors` from a local PostgreSQL database named :code:`hospitals` you will use :meth:`.from_sql`:
 
 .. code-block:: python
 
