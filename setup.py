@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name='agate-sql',
-    version='0.7.0',
+    version='0.7.1',
     description='agate-sql adds SQL read/write support to agate.',
     long_description=long_description,
     long_description_content_type='text/x-rst',

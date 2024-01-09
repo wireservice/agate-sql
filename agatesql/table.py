@@ -276,15 +276,14 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
                                min_col_len=min_col_len, col_len_multiplier=col_len_multiplier)
 
     if create:
-        with connection.begin_nested() as conn:
+        with connection.begin() as conn:
             if overwrite:
                 sql_table.drop(bind=connection, checkfirst=True)
 
             sql_table.create(bind=connection, checkfirst=create_if_not_exists)
-            conn.commit()
 
     if insert:
-        with connection.begin_nested() as conn:
+        with connection.begin() as conn:
             insert = sql_table.insert()
             for prefix in prefixes:
                 insert = insert.prefix_with(prefix)
@@ -298,8 +297,6 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
                         end_index = number_of_rows
                     connection.execute(insert, [dict(zip(self.column_names, row)) for row in
                                                 self.rows[index * chunk_size:end_index]])
-
-            conn.commit()
 
     try:
         return sql_table
