@@ -166,7 +166,9 @@ class TestSQL(agate.AgateTestCase):
         self.assertEqual(statement.replace('\t', '  '), dedent(expected))
 
     def test_to_sql_create_statement_with_dialects(self):
-        for dialect in ['crate', 'mssql', 'mysql', 'postgresql', 'sqlite']:
+        # Can test 'ingres' if:
+        # pip install git+https://github.com/clach04/ingres_sa_dialect.git
+        for dialect in ('crate', 'mssql', 'mysql', 'oracle', 'postgresql', 'sqlite'):
             self.table.to_sql_create_statement('test_table', dialect=dialect)
 
     def test_to_sql_create_statement_zero_width(self):
