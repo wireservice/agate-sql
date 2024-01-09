@@ -1,3 +1,8 @@
+0.7.2 - Jan 9, 2024
+--------------------
+
+* fix: Remove internal use of transactions (added in 0.6.0), because csvkit's csvsql already starts a transaction.
+
 0.7.1 - Jan 9, 2024
 --------------------
 

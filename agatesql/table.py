@@ -282,27 +282,25 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
                                min_col_len=min_col_len, col_len_multiplier=col_len_multiplier)
 
     if create:
-        with connection.begin():
-            if overwrite:
-                sql_table.drop(bind=connection, checkfirst=True)
+        if overwrite:
+            sql_table.drop(bind=connection, checkfirst=True)
 
-            sql_table.create(bind=connection, checkfirst=create_if_not_exists)
+        sql_table.create(bind=connection, checkfirst=create_if_not_exists)
 
     if insert:
-        with connection.begin():
-            insert = sql_table.insert()
-            for prefix in prefixes:
-                insert = insert.prefix_with(prefix)
-            if chunk_size is None:
-                connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
-            else:
-                number_of_rows = len(self.rows)
-                for index in range((number_of_rows - 1) // chunk_size + 1):
-                    end_index = (index + 1) * chunk_size
-                    if end_index > number_of_rows:
-                        end_index = number_of_rows
-                    connection.execute(insert, [dict(zip(self.column_names, row)) for row in
-                                                self.rows[index * chunk_size:end_index]])
+        insert = sql_table.insert()
+        for prefix in prefixes:
+            insert = insert.prefix_with(prefix)
+        if chunk_size is None:
+            connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+        else:
+            number_of_rows = len(self.rows)
+            for index in range((number_of_rows - 1) // chunk_size + 1):
+                end_index = (index + 1) * chunk_size
+                if end_index > number_of_rows:
+                    end_index = number_of_rows
+                connection.execute(insert, [dict(zip(self.column_names, row)) for row in
+                                            self.rows[index * chunk_size:end_index]])
 
     try:
         return sql_table
