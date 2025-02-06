@@ -38,7 +38,7 @@ setup(
     ],
     extras_require={
         'test': [
-            'crate',
+            'sqlalchemy-cratedb',
             'geojson',
             'pytest',
             'pytest-cov',
