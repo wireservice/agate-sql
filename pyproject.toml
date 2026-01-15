@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agate-sql"
+version = "0.7.3"
+authors = [{name = "Christopher Groskopf", email = "chrisgroskopf@gmail.com"}]
+description = "agate-sql adds SQL read/write support to agate."
+readme = "README.rst"
+license = {text = "MIT"}
+urls = {Homepage = "https://agate-sql.readthedocs.org/"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "agate>=1.5.0",
+    "sqlalchemy>=1.4",
+]
+
+[project.optional-dependencies]
+test = [
+    "sqlalchemy-cratedb",
+    "geojson",
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "tests.*"]
+
+[tool.isort]
+line_length = 119
