@@ -47,6 +47,26 @@ The first argument to either function can be any valid `sqlalchemy connection st
 
 That's all there is to it.
 
+Transactions
+------------
+
+When passed a connection string, :meth:`.to_sql` commits its writes on success
+and rolls them back on error, then closes its connection. When passed an existing
+SQLAlchemy connection, it leaves transaction management and connection cleanup
+to the caller. For example, to commit multiple writes together:
+
+.. code-block:: python
+
+    from sqlalchemy import create_engine
+
+    engine = create_engine('postgresql:///hospitals')
+    with engine.begin() as connection:
+        doctors.to_sql(connection, 'doctors')
+        departments.to_sql(connection, 'departments')
+
+Database-specific restrictions on transactional DDL still apply when creating
+or replacing tables.
+
 ===
 API
 ===

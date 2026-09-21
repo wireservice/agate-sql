@@ -5,6 +5,7 @@ This module contains the agatesql extensions to
 
 import datetime
 import decimal
+from contextlib import nullcontext
 from urllib.parse import urlsplit
 
 import agate
@@ -248,7 +249,10 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
     Monkey patched as instance method :meth:`Table.to_sql`.
 
     :param connection_or_string:
-        An existing sqlalchemy connection or a connection string.
+        An existing sqlalchemy connection or a connection string. Writes using
+        a connection string are committed on success and rolled back on error.
+        An existing connection remains open and its transaction is managed by
+        the caller.
     :param table_name:
         The name of the SQL table to create.
     :param overwrite:
@@ -276,34 +280,38 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
     """
     engine, connection = get_engine_and_connection(connection_or_string)
 
-    dialect = connection.engine.dialect.name
-    sql_table = make_sql_table(self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
-                               unique_constraint=unique_constraint, connection=connection,
-                               min_col_len=min_col_len, col_len_multiplier=col_len_multiplier)
-
-    if create:
-        if overwrite:
-            sql_table.drop(bind=connection, checkfirst=True)
-
-        sql_table.create(bind=connection, checkfirst=create_if_not_exists)
-
-    if insert:
-        insert = sql_table.insert()
-        for prefix in prefixes:
-            insert = insert.prefix_with(prefix)
-        if chunk_size is None:
-            connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
-        else:
-            number_of_rows = len(self.rows)
-            for index in range((number_of_rows - 1) // chunk_size + 1):
-                end_index = (index + 1) * chunk_size
-                if end_index > number_of_rows:
-                    end_index = number_of_rows
-                connection.execute(insert, [dict(zip(self.column_names, row)) for row in
-                                            self.rows[index * chunk_size:end_index]])
-
     try:
-        return sql_table
+        # Only manage transactions for connections opened by this function.
+        # In particular, csvkit's csvsql manages its own outer transaction.
+        with connection.begin() if engine is not None else nullcontext():
+            dialect = connection.engine.dialect.name
+            sql_table = make_sql_table(
+                self, table_name, dialect=dialect, db_schema=db_schema, constraints=constraints,
+                unique_constraint=unique_constraint, connection=connection,
+                min_col_len=min_col_len, col_len_multiplier=col_len_multiplier)
+
+            if create:
+                if overwrite:
+                    sql_table.drop(bind=connection, checkfirst=True)
+
+                sql_table.create(bind=connection, checkfirst=create_if_not_exists)
+
+            if insert:
+                insert = sql_table.insert()
+                for prefix in prefixes:
+                    insert = insert.prefix_with(prefix)
+                if chunk_size is None:
+                    connection.execute(insert, [dict(zip(self.column_names, row)) for row in self.rows])
+                else:
+                    number_of_rows = len(self.rows)
+                    for index in range((number_of_rows - 1) // chunk_size + 1):
+                        end_index = (index + 1) * chunk_size
+                        if end_index > number_of_rows:
+                            end_index = number_of_rows
+                        connection.execute(insert, [dict(zip(self.column_names, row)) for row in
+                                                    self.rows[index * chunk_size:end_index]])
+
+            return sql_table
     finally:
         if engine is not None:
             connection.close()
