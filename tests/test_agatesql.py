@@ -1,8 +1,11 @@
 from decimal import Decimal
 from textwrap import dedent
+from unittest.mock import Mock
 
 import agate
 from sqlalchemy import create_engine
+from sqlalchemy.dialects import mysql
+from sqlalchemy.engine import Connection
 from sqlalchemy.exc import IntegrityError
 
 import agatesql
@@ -101,6 +104,36 @@ class TestSQL(agate.AgateTestCase):
 
         self.assertEqual(len(table.rows), len(self.table.rows) - 1)
         self.assertSequenceEqual(table.rows[1], self.table.rows[2])
+
+    def test_mysql_replace(self):
+        for chunk_size in (None, 1):
+            for prefixes in (['REPLACE'], ['replace'], ['LOW_PRIORITY', 'REPLACE']):
+                with self.subTest(chunk_size=chunk_size, prefixes=prefixes):
+                    original_prefixes = prefixes[:]
+                    connection = Mock(spec=Connection)
+                    connection.engine = Mock(dialect=mysql.dialect())
+                    self.table.to_sql(connection, 'insert table', create=False,
+                                      prefixes=prefixes, chunk_size=chunk_size)
+                    expected = 'REPLACE LOW_PRIORITY INTO' if 'LOW_PRIORITY' in prefixes else 'REPLACE INTO'
+                    calls = connection.execute.call_args_list
+                    self.assertEqual(len(calls), 1 if chunk_size is None else len(self.rows))
+                    for call in calls:
+                        statement, parameters = call.args
+                        sql = str(statement.compile(dialect=connection.engine.dialect))
+                        self.assertTrue(sql.startswith(expected + ' `insert table`'), sql)
+                        self.assertNotIn('INSERT REPLACE', sql)
+                        self.assertTrue(parameters)
+                    self.assertEqual(prefixes, original_prefixes)
+
+    def test_mysql_insert_prefixes(self):
+        for prefixes, expected in (([], 'INSERT INTO'), (['IGNORE'], 'INSERT IGNORE INTO')):
+            with self.subTest(prefixes=prefixes):
+                connection = Mock(spec=Connection)
+                connection.engine = Mock(dialect=mysql.dialect())
+                self.table.to_sql(connection, 'test', create=False, prefixes=prefixes)
+                statement = connection.execute.call_args.args[0]
+                sql = str(statement.compile(dialect=connection.engine.dialect))
+                self.assertTrue(sql.startswith(expected + ' test'), sql)
 
     def test_to_sql_create_statement(self):
         statement = self.table.to_sql_create_statement('test_table')

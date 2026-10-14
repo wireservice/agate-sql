@@ -1,6 +1,7 @@
 The following individuals have contributed code to agate-sql:
 
 * `Christopher Groskopf <https://github.com/onyxfish>`_
+* `AC <https://github.com/ac1982>`_
 * `Adrian Klaver <https://github.com/aklaver>`_
 * `James McKinney <https://github.com/jpmckinney>`_
 * `Chris Keller <https://github.com/chrislkeller>`_

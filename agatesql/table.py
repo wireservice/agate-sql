@@ -13,8 +13,9 @@ from sqlalchemy.dialects.mssql import BIT
 from sqlalchemy.dialects.oracle import INTERVAL as ORACLE_INTERVAL
 from sqlalchemy.dialects.postgresql import INTERVAL as POSTGRES_INTERVAL
 from sqlalchemy.engine import Connection
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.schema import CreateTable
-from sqlalchemy.sql import select
+from sqlalchemy.sql import Insert, select
 from sqlalchemy.types import BOOLEAN, DATE, DATETIME, DECIMAL, FLOAT, TEXT, TIMESTAMP, VARCHAR, Interval
 
 SQL_TYPE_MAP = {
@@ -43,6 +44,18 @@ INTERVAL_MAP = {
     'postgresql': POSTGRES_INTERVAL,
     'oracle': ORACLE_INTERVAL,
 }
+
+
+class MySQLReplace(Insert):
+    """A MySQL replacement using SQLAlchemy's parameter and column handling."""
+
+    inherit_cache = True
+
+
+@compiles(MySQLReplace, 'mysql')
+def compile_mysql_replace(statement, compiler, **kwargs):
+    """Replace only the leading INSERT keyword, preserving bound parameters."""
+    return compiler.visit_insert(statement, **kwargs).replace('INSERT ', 'REPLACE ', 1)
 
 
 def get_engine_and_connection(connection_or_string=None):
@@ -260,7 +273,8 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
     :param insert:
         Insert table data.
     :param prefixes:
-        Add prefixes to the insert query.
+        Add prefixes to the insert query. On MySQL, ``REPLACE`` uses
+        ``REPLACE INTO`` instead of ``INSERT INTO``.
     :param db_schema:
         Create table in the specified database schema.
     :param constraints:
@@ -289,6 +303,10 @@ def to_sql(self, connection_or_string, table_name, overwrite=False,
 
     if insert:
         insert = sql_table.insert()
+        prefixes = list(prefixes)
+        if dialect == 'mysql' and any(isinstance(prefix, str) and prefix.upper() == 'REPLACE' for prefix in prefixes):
+            insert = MySQLReplace(sql_table)
+            prefixes = [prefix for prefix in prefixes if not (isinstance(prefix, str) and prefix.upper() == 'REPLACE')]
         for prefix in prefixes:
             insert = insert.prefix_with(prefix)
         if chunk_size is None:

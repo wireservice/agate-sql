@@ -1,3 +1,8 @@
+Unreleased
+----------
+
+* Fix MySQL ``REPLACE`` prefixes to generate ``REPLACE INTO`` statements.
+
 0.7.3 - December 15, 2025
 -------------------------
 
