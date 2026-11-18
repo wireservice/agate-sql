@@ -43,7 +43,7 @@ To save this table back to the database:
 
     new_table.to_sql('postgresql:///hospitals', 'doctors')
 
-The first argument to either function can be any valid `sqlalchemy connection string <https://docs.sqlalchemy.org/en/rel_1_0/core/engines.html>`_. The second argument must be a database name. (Arbitrary SQL queries are not supported.)
+The first argument to either function can be any valid `sqlalchemy connection string <https://docs.sqlalchemy.org/en/rel_1_0/core/engines.html>`_. The second argument must be a table name. (Arbitrary SQL queries are not supported.)
 
 That's all there is to it.
 
